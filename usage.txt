@@ -1,0 +1,8 @@
+::pki::pkcs11::loadmodule <filename>                       -> handle
+::pki::pkcs11::listslots  <handle>                         -> list: slot flags
+::pki::pkcs11::listcerts  <handle> <slot>                  -> list: certId cert 
+::pki::pkcs11::login <handle> <slot> <password>            -> true/false
+::pki::pkcs11::logout <handle> <slot>                      -> true/false
+::pki::pkcs11::sign <handle> <slot> <certId> <data>        -> data
+::pki::pkcs11::decrypt <handle> <slot> <certId> <data>     -> data
+::pki::pkcs11::unloadmoule <handle>                        -> true/false
