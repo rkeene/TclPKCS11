@@ -240,18 +240,21 @@ MODULE_SCOPE Tcl_Obj *tclpkcs11_pkcs11_error(CK_RV errorCode) {
 }
 
 MODULE_SCOPE Tcl_Obj *tclpkcs11_bytearray_to_string(const unsigned char *data, unsigned long datalen) {
-	unsigned long idx;
+	static char alphabet[] = "0123456789abcdef";
+	unsigned long idx, bufidx;
 	Tcl_Obj *retval;
-
-	retval = Tcl_NewObj();
+	char buf[1024];
 
 	if (data == NULL) {
 		return(retval);
 	}
 
-	for (idx = 0; idx < datalen; idx++) {
-		Tcl_AppendObjToObj(retval, Tcl_ObjPrintf("%02x", data[idx]));
+	for (bufidx = idx = 0; (idx < datalen) && (bufidx < sizeof(buf)); idx++) {
+		buf[bufidx++] = (data[idx] >> 4) & 0xf;
+		buf[bufidx++] = data[idx] & 0xf;
 	}
+
+	retval = Tcl_NewByteArrayObj(buf, bufidx);
 
 	return(retval);
 }
@@ -556,7 +559,8 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 
 	interpdata = (struct tclpkcs11_interpdata *) cd;
 
-	tcl_handle = Tcl_ObjPrintf("pkcsmod%lu", interpdata->handles_idx);
+	tcl_handle = Tcl_NewStringObj("pkcsmod", -1);
+	Tcl_AppendObjToObj(tcl_handle, Tcl_NewLongObj(interpdata->handles_idx));
 	(interpdata->handles_idx)++;
 
 	tcl_handle_entry = Tcl_CreateHashEntry(&interpdata->handles, (const char *) tcl_handle, &is_new_entry);
