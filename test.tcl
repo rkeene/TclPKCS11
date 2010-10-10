@@ -52,6 +52,10 @@ foreach certinfo_list $certs {
 			pki::pkcs11::login $handle $token_slotid $password
 
 			set plain  [pki::decrypt -binary -priv $cipher $certinfo_list]
+		} else {
+			puts stderr "$::errorInfo"
+
+			exit 1
 		}
 	}
 
