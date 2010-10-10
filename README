@@ -2,3 +2,11 @@ PKCS#11 Extension for Tcl.
 
 Can be used to load a PKCS#11 module (e.g., ActivClient, ActivCard,
 CoolKey, CACKey) and perform cryptographic operations.
+
+This package requires the "pki" extension, which is pure Tcl and can be
+found in Tcllib.
+
+Installation:
+	./configure
+	make
+	cp tclpkcs11.so pkgIndex.tcl /dest
