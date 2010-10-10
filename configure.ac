@@ -1,24 +1,17 @@
 dnl Define ourselves
 AC_INIT(tclpkcs11, 1.0)
 
-dnl Perform TEA related operations
-TEA_INIT(3.9)
-TEA_SETUP_COMPILER_CC
-
 dnl Checks for programs.
+AC_PROG_CC
 AC_PROG_MAKE_SET
-AC_AIX
+AC_PROG_INSTALL
 AC_GNU_SOURCE
 
-dnl Continue TEA related configuration
-TEA_PATH_TCLCONFIG
-TEA_LOAD_TCLCONFIG
-TEA_CONFIG_CFLAGS
+dnl Determine system information
+DC_CHK_OS_INFO
 
-dnl Fix TEA's failings
-dnl The TEA developers should not be let near systems
-AC_SUBST(SHLIB_SUFFIX)
-AC_SUBST(CC_SEARCH_FLAGS)
+dnl Perform Tcl Extension required stuff
+TCLEXT_INIT
 
 dnl Find out if we have the functions needed to open shared objects
 AC_SEARCH_LIBS(dlopen, dl,, [
