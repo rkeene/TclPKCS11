@@ -250,8 +250,8 @@ MODULE_SCOPE Tcl_Obj *tclpkcs11_bytearray_to_string(const unsigned char *data, u
 	}
 
 	for (bufidx = idx = 0; (idx < datalen) && (bufidx < sizeof(buf)); idx++) {
-		buf[bufidx++] = (data[idx] >> 4) & 0xf;
-		buf[bufidx++] = data[idx] & 0xf;
+		buf[bufidx++] = alphabet[(data[idx] >> 4) & 0xf];
+		buf[bufidx++] = alphabet[data[idx] & 0xf];
 	}
 
 	retval = Tcl_NewByteArrayObj(buf, bufidx);
