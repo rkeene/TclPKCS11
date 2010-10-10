@@ -3,7 +3,7 @@ UTIL="tclpkcs11"
 
 # This is the name of output files that should exist after configure 
 # procedures.
-BINS="libtclpkcs11.so"
+BINS="tclpkcs11.so"
 
 # This lists the name of files that are required to exist
 REQS=""
@@ -33,7 +33,7 @@ UPDATE_VARS=""
 
 # This script is executed immediately after copying the files
 # to a temp directory to attempt to compile
-BEFORE=""
+BEFORE="build/pre.sh"
 
 # This script is executed immediately prior to creation of the
 # tarball
