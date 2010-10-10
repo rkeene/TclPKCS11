@@ -390,7 +390,9 @@ static void *tclpkcs11_int_load_module(const char *pathname) {
 	int tcl_rv;
 	Tcl_LoadHandle *new_handle;
 
-	tcl_rv = Tcl_LoadFile(NULL, pathname, NULL, 0, NULL, &new_handle);
+	new_handle = (Tcl_LoadHandle *) ckalloc(sizeof(*new_handle));
+
+	tcl_rv = Tcl_LoadFile(NULL, Tcl_NewStringObj(pathname, -1), NULL, 0, NULL, new_handle);
 	if (tcl_rv != TCL_OK) {
 		return(NULL);
 	}
@@ -403,7 +405,13 @@ static void *tclpkcs11_int_load_module(const char *pathname) {
 }
 static void tclpkcs11_int_unload_module(void *handle) {
 #ifdef TCL_INCLUDES_LOADFILE
-	Tcl_FSUnloadFile(NULL, handle);
+	Tcl_LoadHandle *tcl_handle;
+
+	tcl_handle = handle;
+
+	Tcl_FSUnloadFile(NULL, *tcl_handle);
+
+	ckfree(handle);
 #else
 	/* XXX: TODO: Replace this with Tcl_Unload() in 8.6 or otherwise a system-specific unloading mechanism */
 	dlclose(handle);
@@ -417,7 +425,7 @@ static void *tclpkcs11_int_lookup_sym(void *handle, const char *sym) {
 
 	tcl_handle = handle;
 
-	retval = Tcl_FindSymbol(NULL, *tcl_handle, sym);o
+	retval = Tcl_FindSymbol(NULL, *tcl_handle, sym);
 
 	return(retval);
 #else
