@@ -1,0 +1,23 @@
+CC = @CC@
+SHLIB_LD = @SHLIB_LD@
+CFLAGS = @CFLAGS@ @SHLIB_CFLAGS@ @CFLAGS_OPTIMIZE@
+CPPFLAGS = @CPPFLAGS@ @DEFS@ -DTCL_USE_STUBS=1
+LDFLAGS = @CC_SEARCH_FLAGS@ @SHLIB_LD_LIBS@ @TCL_STUB_LIB_SPEC@
+LIBS = @LIBS@ @TCL_STUB_LIB_FLAG@
+
+all: tclpkcs11@SHLIB_SUFFIX@
+
+pkcs11.h: pkcs11f.h pkcs11t.h
+tclpkcs11.o: tclpkcs11.c pkcs11.h
+tclpkcs11@SHLIB_SUFFIX@: tclpkcs11.o
+	$(SHLIB_LD) $(LDFLAGS) -o tclpkcs11@SHLIB_SUFFIX@ tclpkcs11.o $(LIBS)
+
+clean:
+	rm -f tclpkcs11@SHLIB_SUFFIX@ tclpkcs11.o
+
+distclean: clean
+	rm -rf autom4te.cache
+	rm -f config.log config.status
+	rm -f Makefile
+
+.PHONY: all clean distclean

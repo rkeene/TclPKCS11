@@ -1,6 +1,15 @@
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
+#ifdef HAVE_UNISTD_H
+#  include <unistd.h>
+#endif
+#ifdef HAVE_STDLIB_H
+#  include <stdlib.h>
+#endif
+#ifdef HAVE_STRING_H
+#  include <string.h>
+#endif
+#ifdef HAVE_STRINGS_H
+#  include <strings.h>
+#endif
 #ifdef HAVE_DLFCN_H
 #  include <dlfcn.h>
 #endif
@@ -47,7 +56,7 @@ struct tclpkcs11_handle {
 /*
  * Tcl <--> PKCS11 Bridge Functions
  */ 
-static Tcl_Obj *tclpkcs11_pkcs11_error(CK_RV errorCode) {
+MODULE_SCOPE Tcl_Obj *tclpkcs11_pkcs11_error(CK_RV errorCode) {
 	switch (errorCode) {
 		case CKR_OK:
 			return(Tcl_NewStringObj("PKCS11_OK OK", -1));
@@ -230,7 +239,7 @@ static Tcl_Obj *tclpkcs11_pkcs11_error(CK_RV errorCode) {
 	return(Tcl_NewStringObj("PKCS11_ERROR UNKNOWN", -1));
 }
 
-static Tcl_Obj *tclpkcs11_bytearray_to_string(const unsigned char *data, unsigned long datalen) {
+MODULE_SCOPE Tcl_Obj *tclpkcs11_bytearray_to_string(const unsigned char *data, unsigned long datalen) {
 	unsigned long idx;
 	Tcl_Obj *retval;
 
@@ -241,13 +250,13 @@ static Tcl_Obj *tclpkcs11_bytearray_to_string(const unsigned char *data, unsigne
 	}
 
 	for (idx = 0; idx < datalen; idx++) {
-		Tcl_AppendPrintfToObj(retval, "%02x", data[idx]);
+		Tcl_AppendObjToObj(retval, Tcl_ObjPrintf("%02x", data[idx]));
 	}
 
 	return(retval);
 }
 
-static unsigned long tclpkcs11_string_to_bytearray(Tcl_Obj *data, unsigned char *outbuf, unsigned long outbuflen) {
+MODULE_SCOPE unsigned long tclpkcs11_string_to_bytearray(Tcl_Obj *data, unsigned char *outbuf, unsigned long outbuflen) {
 	unsigned long outbufidx = 0;
 	char tmpbuf[5];
 	char *str;
@@ -294,7 +303,7 @@ static unsigned long tclpkcs11_string_to_bytearray(Tcl_Obj *data, unsigned char 
 }
 
 /* PKCS#11 Mutex functions implementation that use Tcl Mutexes */
-static CK_RV tclpkcs11_create_mutex(void **mutex) {
+MODULE_SCOPE CK_RV tclpkcs11_create_mutex(void **mutex) {
 	Tcl_Mutex *retval;
 
 	if (!mutex) {
@@ -309,7 +318,7 @@ static CK_RV tclpkcs11_create_mutex(void **mutex) {
 	return(CKR_OK);
 }
 
-static CK_RV tclpkcs11_lock_mutex(void *mutex) {
+MODULE_SCOPE CK_RV tclpkcs11_lock_mutex(void *mutex) {
 	if (!mutex) {
 		return(CKR_GENERAL_ERROR);
 	}
@@ -319,7 +328,7 @@ static CK_RV tclpkcs11_lock_mutex(void *mutex) {
 	return(CKR_OK);
 }
 
-static CK_RV tclpkcs11_unlock_mutex(void *mutex) {
+MODULE_SCOPE CK_RV tclpkcs11_unlock_mutex(void *mutex) {
 	if (!mutex) {
 		return(CKR_GENERAL_ERROR);
 	}
@@ -329,19 +338,19 @@ static CK_RV tclpkcs11_unlock_mutex(void *mutex) {
 	return(CKR_OK);
 }
 
-static CK_RV tclpkcs11_destroy_mutex(void *mutex) {
+MODULE_SCOPE CK_RV tclpkcs11_destroy_mutex(void *mutex) {
 	if (!mutex) {
 		return(CKR_GENERAL_ERROR);
 	}
 
 	Tcl_MutexFinalize(*mutex);
-	free(mutex);
+	ckfree(mutex);
 
 	return(CKR_OK);
 }
 
 /* Convience function to start a session if one is not already active */
-static int tclpkcs11_start_session(struct tclpkcs11_handle *handle, CK_SLOT_ID slot) {
+MODULE_SCOPE int tclpkcs11_start_session(struct tclpkcs11_handle *handle, CK_SLOT_ID slot) {
 	CK_SESSION_HANDLE tmp_session;
 	CK_RV chk_rv;
 
@@ -374,7 +383,7 @@ static int tclpkcs11_start_session(struct tclpkcs11_handle *handle, CK_SLOT_ID s
 	return(CKR_OK);
 }
 
-static int tclpkcs11_close_session(struct tclpkcs11_handle *handle) {
+MODULE_SCOPE int tclpkcs11_close_session(struct tclpkcs11_handle *handle) {
 	CK_RV chk_rv;
 
 	if (handle->session != -1) {
@@ -393,7 +402,7 @@ static int tclpkcs11_close_session(struct tclpkcs11_handle *handle) {
 /*
  * Platform Specific Functions 
  */
-static void *tclpkcs11_int_load_module(const char *pathname) {
+MODULE_SCOPE void *tclpkcs11_int_load_module(const char *pathname) {
 #if defined(TCL_INCLUDES_LOADFILE)
 	int tcl_rv;
 	Tcl_LoadHandle *new_handle;
@@ -415,7 +424,7 @@ static void *tclpkcs11_int_load_module(const char *pathname) {
 #endif
 	return(NULL);
 }
-static void tclpkcs11_int_unload_module(void *handle) {
+MODULE_SCOPE void tclpkcs11_int_unload_module(void *handle) {
 #if defined(TCL_INCLUDES_LOADFILE)
 	Tcl_LoadHandle *tcl_handle;
 
@@ -433,7 +442,7 @@ static void tclpkcs11_int_unload_module(void *handle) {
 #endif
 	return;
 }
-static void *tclpkcs11_int_lookup_sym(void *handle, const char *sym) {
+MODULE_SCOPE void *tclpkcs11_int_lookup_sym(void *handle, const char *sym) {
 #if defined(TCL_INCLUDES_LOADFILE)
 	Tcl_LoadHandle *tcl_handle;
 	void *retval;
@@ -464,15 +473,13 @@ static void *tclpkcs11_int_lookup_sym(void *handle, const char *sym) {
 /*
  * Tcl Commands
  */
-static int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 	struct tclpkcs11_interpdata *interpdata;
 	struct tclpkcs11_handle *new_handle;
 	const char *pathname;
 	Tcl_HashEntry *tcl_handle_entry;
 	Tcl_Obj *tcl_handle;
 	void *handle;
-	char handle_buf[32];
-	int snprintf_ret;
 	int is_new_entry;
 
 	CK_C_INITIALIZE_ARGS initargs;
@@ -549,14 +556,8 @@ static int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int objc, Tc
 
 	interpdata = (struct tclpkcs11_interpdata *) cd;
 
-	snprintf_ret = snprintf(handle_buf, sizeof(handle_buf), "pkcsmod%lu", interpdata->handles_idx);
+	tcl_handle = Tcl_ObjPrintf("pkcsmod%lu", interpdata->handles_idx);
 	(interpdata->handles_idx)++;
-
-	if (snprintf_ret >= sizeof(handle_buf)) {
-		snprintf_ret = sizeof(handle_buf) - 1;
-	}
-
-	tcl_handle = Tcl_NewStringObj(handle_buf, snprintf_ret);
 
 	tcl_handle_entry = Tcl_CreateHashEntry(&interpdata->handles, (const char *) tcl_handle, &is_new_entry);
 	if (!tcl_handle_entry) {
@@ -581,7 +582,7 @@ static int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int objc, Tc
 	return(TCL_OK);
 }
 
-static int tclpkcs11_unload_module(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+MODULE_SCOPE int tclpkcs11_unload_module(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 	struct tclpkcs11_interpdata *interpdata;
 	struct tclpkcs11_handle *handle;
 	Tcl_HashEntry *tcl_handle_entry;
@@ -657,7 +658,7 @@ static int tclpkcs11_unload_module(ClientData cd, Tcl_Interp *interp, int objc, 
 	return(TCL_OK);
 }
 
-static int tclpkcs11_list_slots(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+MODULE_SCOPE int tclpkcs11_list_slots(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 	struct tclpkcs11_interpdata *interpdata;
 	struct tclpkcs11_handle *handle;
 	Tcl_HashEntry *tcl_handle_entry;
@@ -835,7 +836,7 @@ static int tclpkcs11_list_slots(ClientData cd, Tcl_Interp *interp, int objc, Tcl
 	return(TCL_OK);
 }
 
-static int tclpkcs11_list_certs(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+MODULE_SCOPE int tclpkcs11_list_certs(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 	struct tclpkcs11_interpdata *interpdata;
 	struct tclpkcs11_handle *handle;
 	Tcl_HashEntry *tcl_handle_entry;
@@ -1077,7 +1078,7 @@ static int tclpkcs11_list_certs(ClientData cd, Tcl_Interp *interp, int objc, Tcl
 	return(TCL_OK);
 }
 
-static int tclpkcs11_login(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+MODULE_SCOPE int tclpkcs11_login(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 	struct tclpkcs11_interpdata *interpdata;
 	struct tclpkcs11_handle *handle;
 	Tcl_HashEntry *tcl_handle_entry;
@@ -1158,7 +1159,7 @@ static int tclpkcs11_login(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj 
 	return(TCL_OK);
 }
 
-static int tclpkcs11_logout(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+MODULE_SCOPE int tclpkcs11_logout(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 	struct tclpkcs11_interpdata *interpdata;
 	struct tclpkcs11_handle *handle;
 	Tcl_HashEntry *tcl_handle_entry;
@@ -1226,7 +1227,7 @@ static int tclpkcs11_logout(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj
 	return(TCL_OK);
 }
 
-static int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 	struct tclpkcs11_interpdata *interpdata;
 	struct tclpkcs11_handle *handle;
 	unsigned char *input, resultbuf[1024];
@@ -1483,11 +1484,11 @@ static int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *interp,
 	return(TCL_OK);
 }
 
-static int tclpkcs11_encrypt(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+MODULE_SCOPE int tclpkcs11_encrypt(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 	return(tclpkcs11_perform_pki(1, cd, interp, objc, objv));
 }
 
-static int tclpkcs11_decrypt(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+MODULE_SCOPE int tclpkcs11_decrypt(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 	return(tclpkcs11_perform_pki(0, cd, interp, objc, objv));
 }
 
@@ -1499,6 +1500,16 @@ int Tclpkcs11_Init(Tcl_Interp *interp) {
 	Tcl_Command tclCreatComm_ret;
 	const char *tclPkgReq_ret;
 	int tclPkgProv_ret;
+
+#ifdef TCL_USE_STUBS
+	const char *tclInitStubs_ret;
+
+	/* Initialize Stubs */
+	tclInitStubs_ret = Tcl_InitStubs(interp, "8.4", 0);
+	if (!tclInitStubs_ret) {
+		return(TCL_ERROR);
+	}
+#endif
 
 	tclPkgReq_ret = Tcl_PkgRequire(interp, "pki", "0.1", 0);
 	if (!tclPkgReq_ret) {
