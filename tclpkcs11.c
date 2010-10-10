@@ -4,6 +4,10 @@
 #include <dlfcn.h>
 #include <tcl.h>
 
+#if 10 * TCL_MAJOR_VERSION + TCL_MINOR_VERSION >= 86
+#  define TCL_INCLUDES_LOADFILE 1
+#endif
+
 /* PKCS#11 Definitions for the local platform */
 #define CK_PTR *
 #define CK_DECLARE_FUNCTION(rv, func) rv func
@@ -379,6 +383,50 @@ static int tclpkcs11_close_session(struct tclpkcs11_handle *handle) {
 }
 
 /*
+ * Platform Specific Functions 
+ */
+static void *tclpkcs11_int_load_module(const char *pathname) {
+#ifdef TCL_INCLUDES_LOADFILE
+	int tcl_rv;
+	Tcl_LoadHandle *new_handle;
+
+	tcl_rv = Tcl_LoadFile(NULL, pathname, NULL, 0, NULL, &new_handle);
+	if (tcl_rv != TCL_OK) {
+		return(NULL);
+	}
+
+	return(new_handle);
+#else
+	/* XXX: TODO: Replace this with Tcl_Load() in 8.6 or otherwise a system-specific loading mechanism */
+	return(dlopen(pathname, RTLD_LAZY | RTLD_LOCAL));
+#endif
+}
+static void tclpkcs11_int_unload_module(void *handle) {
+#ifdef TCL_INCLUDES_LOADFILE
+	Tcl_FSUnloadFile(NULL, handle);
+#else
+	/* XXX: TODO: Replace this with Tcl_Unload() in 8.6 or otherwise a system-specific unloading mechanism */
+	dlclose(handle);
+#endif
+	return;
+}
+static void *tclpkcs11_int_lookup_sym(void *handle, const char *sym) {
+#ifdef TCL_INCLUDES_LOADFILE
+	Tcl_LoadHandle *tcl_handle;
+	void *retval;
+
+	tcl_handle = handle;
+
+	retval = Tcl_FindSymbol(NULL, *tcl_handle, sym);o
+
+	return(retval);
+#else
+	/* XXX: TODO: Replace this with ... ? in 8.6 or otherwise a system-specific symbol lookup mechanism */
+	return(dlsym(handle, sym));
+#endif
+}
+
+/*
  * Tcl Commands
  */
 static int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
@@ -416,16 +464,14 @@ static int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int objc, Tc
 		return(TCL_ERROR);
 	}
 
-	/* XXX: TODO: Replace this with Tcl_Load() in 8.6 or otherwise a system-specific loading mechanism */
-	handle = dlopen(pathname, RTLD_LAZY | RTLD_LOCAL);
+	handle = tclpkcs11_int_load_module(pathname);
 	if (!handle) {
 		Tcl_SetObjResult(interp, Tcl_NewStringObj("unable to load", -1));
 
 		return(TCL_ERROR);
 	}
 
-	/* XXX: TODO: Replace this with ... ? in 8.6 or otherwise a system-specific symbol lookup mechanism */
-	getFuncList = dlsym(handle, "C_GetFunctionList");
+	getFuncList = tclpkcs11_int_lookup_sym(handle, "C_GetFunctionList");
 	if (!getFuncList) {
 		Tcl_SetObjResult(interp, Tcl_NewStringObj("unable to locate C_GetFunctionList symbol in PKCS#11 module", -1));
 
@@ -566,7 +612,7 @@ static int tclpkcs11_unload_module(ClientData cd, Tcl_Interp *interp, int objc, 
 	Tcl_DeleteHashEntry(tcl_handle_entry);
 
 	/* Attempt to unload the module */
-	dlclose(handle->base);
+	tclpkcs11_int_unload_module(handle->base);
 
 	/* Free our allocated handle */
 	ckfree((char *) handle);
