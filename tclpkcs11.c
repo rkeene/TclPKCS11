@@ -1562,7 +1562,7 @@ int Tclpkcs11_Init(Tcl_Interp *interp) {
 	               TCL_GLOBAL_ONLY
 	              );
 
-	tclPkgProv_ret = Tcl_PkgProvide(interp, "pki::pkcs11", "1.0");
+	tclPkgProv_ret = Tcl_PkgProvide(interp, "pki::pkcs11", PACKAGE_VERSION);
 	if (tclPkgProv_ret != TCL_OK) {
 		return(tclPkgProv_ret);
 	}

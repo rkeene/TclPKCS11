@@ -1,0 +1,4 @@
+PKCS#11 Extension for Tcl.
+
+Can be used to load a PKCS#11 module (e.g., ActivClient, ActivCard,
+CoolKey, CACKey) and perform cryptographic operations.
