@@ -1,5 +1,7 @@
 #! /usr/bin/env tclsh
 
+lappend auto_path [file join [pwd] work lib]
+
 set pkcs11_module "/usr/local/lib/libcackey_g.so"
 
 load tclpkcs11.so Tclpkcs11
@@ -12,9 +14,11 @@ puts "Slots: $slots"
 
 foreach slotinfo $slots {
 	set slotid [lindex $slotinfo 0]
-	set slotflags [lindex $slotinfo 1]
+	set slotlabel [lindex $slotinfo 1]
+	set slotflags [lindex $slotinfo 2]
 
 	if {[lsearch -exact $slotflags TOKEN_PRESENT] != -1} {
+		set token_slotlabel $slotlabel
 		set token_slotid $slotid
 	}
 }
@@ -26,13 +30,38 @@ if {![info exists token_slotid]} {
 }
 
 set certs [::pki::pkcs11::listcerts $handle $token_slotid]
+puts "Found [llength $certs] certificates"
+set orig "TestMsg"
 foreach certinfo $certs {
-	set certid [lindex $certinfo 0]
-	set cert [lindex $certinfo 1]
+	puts "Cert: $certinfo"
+
+	set cipher [pki::encrypt -binary -pub $orig $certinfo]
+
+	if {[catch {
+		set plain  [pki::decrypt -binary -priv $cipher $certinfo]
+	} err]} {
+		if {$err == "PKCS11_ERROR USER_NOT_LOGGED_IN"} {
+			# Login and try it again...
+			puts -nonewline " *** ENTER PIN: "
+			flush stdout
+
+			gets stdin password
+			::pki::pkcs11::login $handle $token_slotid $password
+
+			set plain  [pki::decrypt -binary -priv $cipher $certinfo]
+		}
+	}
+
+	if {$plain != $orig} {
+		puts "Decryption error!  Expected \"$orig\", got \"$plain\""
+
+		exit
+	}
+
+	set cipher [pki::encrypt -binary -priv $orig $certinfo]
+	set plain  [pki::decrypt -binary -pub $cipher $certinfo]
+
+	puts "Got Match!"
 }
 
-#::pki::pkcs11::login <handle> <slot> <password>            -> true/false
-#::pki::pkcs11::logout <handle> <slot>                      -> true/false
-#::pki::pkcs11::sign <handle> <slot> <certId> <data>        -> data
-#::pki::pkcs11::decrypt <handle> <slot> <certId> <data>     -> data
-#::pki::pkcs11::unloadmoule <handle>                        -> true/false
+::pki::pkcs11::unloadmodule $handle

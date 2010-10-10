@@ -1,7 +1,7 @@
 CC = gcc
-CFLAGS = -fPIC -DPIC -Wall
+CFLAGS = -g3 -ggdb3 -fPIC -DPIC -Wall
 CPPFLAGS = -DTCL_USE_STUBS
-SHFLAGS = -rdynamic -shared
+SHFLAGS = -nostartfiles -rdynamic -shared
 LIBS = -ldl -ltclstub8.5 
 
 all: tclpkcs11.so
