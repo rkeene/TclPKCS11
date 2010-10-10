@@ -5,15 +5,15 @@ LDFLAGS =
 SHOBJLDFLAGS = @SHOBJLDFLAGS@
 LIBS = @LIBS@
 
-all: tclpkcs11@SHOBJEXT@
+all: tclpkcs11.@SHOBJEXT@
 
 pkcs11.h: pkcs11f.h pkcs11t.h
 tclpkcs11.o: tclpkcs11.c pkcs11.h
-tclpkcs11@SHOBJEXT@: tclpkcs11.o
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tclpkcs11@SHOBJEXT@ tclpkcs11.o $(LIBS)
+tclpkcs11.@SHOBJEXT@: tclpkcs11.o
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tclpkcs11.@SHOBJEXT@ tclpkcs11.o $(LIBS)
 
 clean:
-	rm -f tclpkcs11@SHOBJEXT@ tclpkcs11.o
+	rm -f tclpkcs11.@SHOBJEXT@ tclpkcs11.o
 
 distclean: clean
 	rm -rf autom4te.cache
