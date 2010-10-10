@@ -415,7 +415,7 @@ MODULE_SCOPE void *tclpkcs11_int_load_module(const char *pathname) {
 
 	return(new_handle);
 #elif defined(HAVE_DLOPEN)
-	return(dlopen(pathname, RTLD_LAZY | RTLD_LOCAL));
+	return(dlopen(pathname, RTLD_NOW | RTLD_GLOBAL));
 #elif defined(HAVE_SHL_LOAD)
 	return(shl_load(pathname, BIND_DEFERRED, 0L));
 #elif defined(_WIN32)
@@ -1330,6 +1330,7 @@ MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *i
 
 		Tcl_ListObjAppendElement(interp, pki_real_cmd, Tcl_NewStringObj("-pub", -1));
 		Tcl_ListObjAppendElement(interp, pki_real_cmd, Tcl_NewStringObj("-binary", -1));
+		Tcl_ListObjAppendElement(interp, pki_real_cmd, Tcl_NewStringObj("--", -1));
 		Tcl_ListObjAppendElement(interp, pki_real_cmd, tcl_input);
 		Tcl_ListObjAppendElement(interp, pki_real_cmd, tcl_keylist);
 

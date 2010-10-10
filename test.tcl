@@ -38,10 +38,10 @@ foreach certinfo_list $certs {
 	array set certinfo $certinfo_list
 	puts "Cert: $certinfo(pkcs11_label) / $certinfo(subject)"
 
-	set cipher [pki::encrypt -binary -pub $orig $certinfo_list]
+	set cipher [pki::encrypt -binary -pub -- $orig $certinfo_list]
 
 	if {[catch {
-		set plain  [pki::decrypt -binary -priv $cipher $certinfo_list]
+		set plain  [pki::decrypt -binary -priv -- $cipher $certinfo_list]
 	} err]} {
 		if {$err == "PKCS11_ERROR USER_NOT_LOGGED_IN"} {
 			# Login and try it again...
@@ -51,7 +51,7 @@ foreach certinfo_list $certs {
 			gets stdin password
 			pki::pkcs11::login $handle $token_slotid $password
 
-			set plain  [pki::decrypt -binary -priv $cipher $certinfo_list]
+			set plain  [pki::decrypt -binary -priv -- $cipher $certinfo_list]
 		} else {
 			puts stderr "$::errorInfo"
 
@@ -65,8 +65,8 @@ foreach certinfo_list $certs {
 		exit 1
 	}
 
-	set cipher [pki::encrypt -binary -priv $orig $certinfo_list]
-	set plain  [pki::decrypt -binary -pub $cipher $certinfo_list]
+	set cipher [pki::encrypt -binary -priv -- $orig $certinfo_list]
+	set plain  [pki::decrypt -binary -pub -- $cipher $certinfo_list]
 
 	set sig    [pki::sign $orig $certinfo_list]
 	set verify [pki::verify $sig $orig $certinfo_list]
