@@ -1,7 +1,15 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dlfcn.h>
+#ifdef HAVE_DLFCN_H
+#  include <dlfcn.h>
+#endif
+#ifdef HAVE_DL_H
+#  include <dl.h>
+#endif
+#ifdef _WIN32
+#  include <windows.h>
+#endif
 #include <tcl.h>
 
 #if 10 * TCL_MAJOR_VERSION + TCL_MINOR_VERSION >= 86
@@ -285,7 +293,7 @@ static unsigned long tclpkcs11_string_to_bytearray(Tcl_Obj *data, unsigned char 
 	return(outbufidx);
 }
 
-/* PKCS#11 CreateMutex implementation that use Tcl Mutexes */
+/* PKCS#11 Mutex functions implementation that use Tcl Mutexes */
 static CK_RV tclpkcs11_create_mutex(void **mutex) {
 	Tcl_Mutex *retval;
 
@@ -386,7 +394,7 @@ static int tclpkcs11_close_session(struct tclpkcs11_handle *handle) {
  * Platform Specific Functions 
  */
 static void *tclpkcs11_int_load_module(const char *pathname) {
-#ifdef TCL_INCLUDES_LOADFILE
+#if defined(TCL_INCLUDES_LOADFILE)
 	int tcl_rv;
 	Tcl_LoadHandle *new_handle;
 
@@ -398,13 +406,17 @@ static void *tclpkcs11_int_load_module(const char *pathname) {
 	}
 
 	return(new_handle);
-#else
-	/* XXX: TODO: Replace this with Tcl_Load() in 8.6 or otherwise a system-specific loading mechanism */
+#elif defined(HAVE_DLOPEN)
 	return(dlopen(pathname, RTLD_LAZY | RTLD_LOCAL));
+#elif defined(HAVE_SHL_LOAD)
+	return(shl_load(pathname, BIND_DEFERRED, 0L));
+#elif defined(_WIN32)
+	return(LoadLibrary(pathname));
 #endif
+	return(NULL);
 }
 static void tclpkcs11_int_unload_module(void *handle) {
-#ifdef TCL_INCLUDES_LOADFILE
+#if defined(TCL_INCLUDES_LOADFILE)
 	Tcl_LoadHandle *tcl_handle;
 
 	tcl_handle = handle;
@@ -412,14 +424,17 @@ static void tclpkcs11_int_unload_module(void *handle) {
 	Tcl_FSUnloadFile(NULL, *tcl_handle);
 
 	ckfree(handle);
-#else
-	/* XXX: TODO: Replace this with Tcl_Unload() in 8.6 or otherwise a system-specific unloading mechanism */
+#elif defined(HAVE_DLOPEN)
 	dlclose(handle);
+#elif defined(HAVE_SHL_LOAD)
+	shl_unload(handle);
+#elif defined(_WIN32)
+	FreeLibrary(handle);
 #endif
 	return;
 }
 static void *tclpkcs11_int_lookup_sym(void *handle, const char *sym) {
-#ifdef TCL_INCLUDES_LOADFILE
+#if defined(TCL_INCLUDES_LOADFILE)
 	Tcl_LoadHandle *tcl_handle;
 	void *retval;
 
@@ -428,10 +443,22 @@ static void *tclpkcs11_int_lookup_sym(void *handle, const char *sym) {
 	retval = Tcl_FindSymbol(NULL, *tcl_handle, sym);
 
 	return(retval);
-#else
-	/* XXX: TODO: Replace this with ... ? in 8.6 or otherwise a system-specific symbol lookup mechanism */
+#elif defined(HAVE_DLOPEN)
 	return(dlsym(handle, sym));
+#elif defined(HAVE_SHL_LOAD)
+	void *retval;
+	int shl_findsym_ret;
+
+	shl_findsym_ret = shl_findsym(handle, sym, TYPE_PROCEDURE, &retval);
+	if (shl_findsym_ret != 0) {
+		return(NULL);
+	}
+
+	return(retval);
+#elif defined(_WIN32)
+	return(GetProcAddress(handle, sym));
 #endif
+	return(NULL);
 }
 
 /*

@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -g3 -ggdb3 -fPIC -DPIC -Wall
-CPPFLAGS = -DTCL_USE_STUBS
+CFLAGS = -fPIC -DPIC -Wall
+CPPFLAGS = -DTCL_USE_STUBS=1 -DHAVE_DLOPEN=1 -DHAVE_DLFCN_H=1
 SHFLAGS = -nostartfiles -rdynamic -shared
 LIBS = -ldl -ltclstub8.5 
 
