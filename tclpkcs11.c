@@ -625,20 +625,10 @@ MODULE_SCOPE int tclpkcs11_unload_module(ClientData cd, Tcl_Interp *interp, int 
 	}
 
 	/* Log out of the PKCS11 module */
-	chk_rv = handle->pkcs11->C_Logout(handle->session);
-	if (chk_rv != CKR_OK) {
-		Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
-
-		return(TCL_ERROR);
-	}
+	handle->pkcs11->C_Logout(handle->session);
 
 	/* Close the session, cleaning up all the session objects */
-	chk_rv = tclpkcs11_close_session(handle);
-	if (chk_rv != CKR_OK) {
-		Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
-
-		return(TCL_ERROR);
-	}
+	tclpkcs11_close_session(handle);
 
 	/* Ask the PKCS#11 Provider to terminate */
 	chk_rv = handle->pkcs11->C_Finalize(NULL);

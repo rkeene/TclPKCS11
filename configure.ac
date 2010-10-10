@@ -10,11 +10,11 @@ AC_GNU_SOURCE
 dnl Determine system information
 DC_CHK_OS_INFO
 
-dnl Perform Tcl Extension required stuff
-TCLEXT_INIT
-
 dnl Determine how to make shared objects
 DC_GET_SHOBJFLAGS
+
+dnl Perform Tcl Extension required stuff
+TCLEXT_INIT
 
 dnl Find out if we have the functions needed to open shared objects
 AC_SEARCH_LIBS(dlopen, dl,, [
