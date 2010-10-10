@@ -1,6 +1,7 @@
 #! /usr/bin/env tclsh
 
 lappend auto_path [file join [pwd] work lib]
+lappend auto_path [file join [pwd] lib]
 
 set pkcs11_module "/usr/local/lib/libcackey.so"
 
