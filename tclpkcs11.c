@@ -33,10 +33,6 @@
 #define CK_NULL_PTR ((void *) 0)
 #include "pkcs11.h"
 
-#ifndef TCLPKCS11_MAX_HANDLES
-#  define TCLPKCS11_MAX_HANDLES 32
-#endif
-
 struct tclpkcs11_interpdata {
 	/* Handle Hash Table */
 	Tcl_HashTable handles;
