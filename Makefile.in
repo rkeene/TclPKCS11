@@ -14,6 +14,7 @@ tclpkcs11.@SHOBJEXT@: tclpkcs11.o
 
 clean:
 	rm -f tclpkcs11.@SHOBJEXT@ tclpkcs11.o
+	rm -f tclpkcs11.@SHOBJEXT@.a tclpkcs11.@SHOBJEXT@.def
 
 distclean: clean
 	rm -rf autom4te.cache

@@ -10,3 +10,7 @@ config.status
 config.status/*
 configure
 configure/*
+tclpkcs11.dll.a
+tclpkcs11.dll.a/*
+tclpkcs11.dll.def
+tclpkcs11.dll.def/*

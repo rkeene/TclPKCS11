@@ -1501,7 +1501,7 @@ int Tclpkcs11_Init(Tcl_Interp *interp) {
 	const char *tclPkgReq_ret;
 	int tclPkgProv_ret;
 
-#ifdef TCL_USE_STUBS
+#ifdef USE_TCL_STUBS
 	const char *tclInitStubs_ret;
 
 	/* Initialize Stubs */

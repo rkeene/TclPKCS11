@@ -53,7 +53,7 @@ AC_DEFUN(TCLEXT_INIT, [
 	AC_DEFINE_UNQUOTED([MODULE_SCOPE], [static], [Define how to declare a function should only be visible to the current module])
 
 	if test "$TCL_SUPPORTS_STUBS" = "1"; then
-		AC_DEFINE(TCL_USE_STUBS, [1], [Define if you are using the Tcl Stubs Mechanism])
+		AC_DEFINE([USE_TCL_STUBS], [1], [Define if you are using the Tcl Stubs Mechanism])
 
 		LIBS="${LIBS} ${TCL_STUB_LIB_SPEC}"
 	else
