@@ -6,7 +6,7 @@ UTIL="tclpkcs11"
 BINS="tclpkcs11.so"
 
 # This lists the name of files that are required to exist
-REQS=""
+REQS="pkgIndex.tcl"
 
 # Version of utility, if empty it will be guessed.
 # If set to "auto" it will be maintained in a file called .version

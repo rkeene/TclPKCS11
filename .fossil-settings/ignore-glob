@@ -10,6 +10,8 @@ config.status
 config.status/*
 configure
 configure/*
+pkgIndex.tcl
+pkgIndex.tcl/*
 tclpkcs11.dll
 tclpkcs11.dll.a
 tclpkcs11.dll.a/*

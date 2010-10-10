@@ -26,4 +26,4 @@ dnl Look for appropriate headers
 AC_CHECK_HEADERS(unistd.h stdlib.h string.h strings.h dlfcn.h dl.h)
 
 dnl Produce output
-AC_OUTPUT(Makefile)
+AC_OUTPUT(Makefile pkgIndex.tcl)
