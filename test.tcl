@@ -5,7 +5,7 @@ lappend auto_path [file join [pwd] lib]
 
 set pkcs11_module "/usr/local/lib/libcackey.so"
 
-load tclpkcs11.so Tclpkcs11
+load ./tclpkcs11.so Tclpkcs11
 
 set handle [pki::pkcs11::loadmodule $pkcs11_module]
 puts "Handle: $handle"
