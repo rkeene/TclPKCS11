@@ -63,7 +63,7 @@ foreach certinfo_list $certs {
 	if {$plain != $orig} {
 		puts "Decryption error!  Expected \"$orig\", got \"$plain\""
 
-		exit 1
+		break
 	}
 
 	set cipher [pki::encrypt -binary -priv -- $orig $certinfo_list]
@@ -75,7 +75,7 @@ foreach certinfo_list $certs {
 	if {!$verify} {
 		puts "Signature verification error!"
 
-		exit 1
+		break
 	}
 }
 
