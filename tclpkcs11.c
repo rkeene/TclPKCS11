@@ -26,11 +26,19 @@
 #endif
 
 /* PKCS#11 Definitions for the local platform */
+#ifndef _WIN32
 #define CK_PTR *
 #define CK_DECLARE_FUNCTION(rv, func) rv func
 #define CK_DECLARE_FUNCTION_POINTER(rv, func) rv (CK_PTR func)
-#define CK_CALLBACK_FUNCTION(rv, func) CK_DECLARE_FUNCTION_POINTER(rv, func)
+#define CK_CALLBACK_FUNCTION(rv, func) rv (CK_PTR func)
 #define CK_NULL_PTR ((void *) 0)
+#else
+#define CK_PTR *
+#define CK_DECLARE_FUNCTION(rv, func) rv __declspec(dllimport) func
+#define CK_DECLARE_FUNCTION_POINTER(rv, func) rv __declspec(dllimport) (CK_PTR func)
+#define CK_CALLBACK_FUNCTION(rv, func) rv (CK_PTR func)
+#define CK_NULL_PTR ((void *) 0)
+#endif
 #include "pkcs11.h"
 
 struct tclpkcs11_interpdata {
@@ -242,7 +250,7 @@ MODULE_SCOPE Tcl_Obj *tclpkcs11_bytearray_to_string(const unsigned char *data, u
 	char buf[1024];
 
 	if (data == NULL) {
-		return(retval);
+		return(Tcl_NewObj());
 	}
 
 	for (bufidx = idx = 0; (idx < datalen) && (bufidx < sizeof(buf)); idx++) {
@@ -250,7 +258,7 @@ MODULE_SCOPE Tcl_Obj *tclpkcs11_bytearray_to_string(const unsigned char *data, u
 		buf[bufidx++] = alphabet[data[idx] & 0xf];
 	}
 
-	retval = Tcl_NewByteArrayObj(buf, bufidx);
+	retval = Tcl_NewByteArrayObj((unsigned char *) buf, bufidx);
 
 	return(retval);
 }
@@ -482,8 +490,8 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 	int is_new_entry;
 
 	CK_C_INITIALIZE_ARGS initargs;
-	CK_RV (*getFuncList)(CK_FUNCTION_LIST_PTR_PTR ppFunctionList);
-	CK_FUNCTION_LIST_PTR pkcs11_function_list;
+	CK_RV (CK_PTR getFuncList)(CK_FUNCTION_LIST_PTR_PTR ppFunctionList);
+	CK_FUNCTION_LIST_PTR pkcs11_function_list = NULL;
 	CK_RV chk_rv;
 
 	if (!cd) {
@@ -519,6 +527,7 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 		return(TCL_ERROR);
 	}
 
+#ifndef _WIN32
 	chk_rv = getFuncList(&pkcs11_function_list);
 	if (chk_rv != CKR_OK) {
 		Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
@@ -537,6 +546,154 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 
 		return(TCL_ERROR);
 	}
+
+#else
+	/*
+	 * Retreiving the functions from C_GetFunctionList does not seem to be
+	 *reliable on Win32
+	 */
+	pkcs11_function_list = (CK_FUNCTION_LIST_PTR) ckalloc(sizeof(*pkcs11_function_list));
+
+	pkcs11_function_list->C_CloseSession = tclpkcs11_int_lookup_sym(handle, "C_CloseSession");
+	if (pkcs11_function_list->C_CloseSession == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_CloseSession)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_Decrypt = tclpkcs11_int_lookup_sym(handle, "C_Decrypt");
+	if (pkcs11_function_list->C_Decrypt == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_Decrypt)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_DecryptFinal = tclpkcs11_int_lookup_sym(handle, "C_DecryptFinal");
+	if (pkcs11_function_list->C_DecryptFinal == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_DecryptFinal)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_DecryptInit = tclpkcs11_int_lookup_sym(handle, "C_DecryptInit");
+	if (pkcs11_function_list->C_DecryptInit == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_DecryptInit)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_Encrypt = tclpkcs11_int_lookup_sym(handle, "C_Encrypt");
+	if (pkcs11_function_list->C_Encrypt == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_Encrypt)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_EncryptInit = tclpkcs11_int_lookup_sym(handle, "C_EncryptInit");
+	if (pkcs11_function_list->C_EncryptInit == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_EncryptInit)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_Finalize = tclpkcs11_int_lookup_sym(handle, "C_Finalize");
+	if (pkcs11_function_list->C_Finalize == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_Finalize)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_FindObjects = tclpkcs11_int_lookup_sym(handle, "C_FindObjects");
+	if (pkcs11_function_list->C_FindObjects == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_FindObjects)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_FindObjectsFinal = tclpkcs11_int_lookup_sym(handle, "C_FindObjectsFinal");
+	if (pkcs11_function_list->C_FindObjectsFinal == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_FindObjectsFinal)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_FindObjectsInit = tclpkcs11_int_lookup_sym(handle, "C_FindObjectsInit");
+	if (pkcs11_function_list->C_FindObjectsInit == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_FindObjectsInit)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_GetAttributeValue = tclpkcs11_int_lookup_sym(handle, "C_GetAttributeValue");
+	if (pkcs11_function_list->C_GetAttributeValue == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_GetAttributeValue)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_GetSlotInfo = tclpkcs11_int_lookup_sym(handle, "C_GetSlotInfo");
+	if (pkcs11_function_list->C_GetSlotInfo == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_GetSlotInfo)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_GetSlotList = tclpkcs11_int_lookup_sym(handle, "C_GetSlotList");
+	if (pkcs11_function_list->C_GetSlotList == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_GetSlotList)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_GetTokenInfo = tclpkcs11_int_lookup_sym(handle, "C_GetTokenInfo");
+	if (pkcs11_function_list->C_GetTokenInfo == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_GetTokenInfo)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_Initialize = tclpkcs11_int_lookup_sym(handle, "C_Initialize");
+	if (pkcs11_function_list->C_Initialize == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_Initialize)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_Login = tclpkcs11_int_lookup_sym(handle, "C_Login");
+	if (pkcs11_function_list->C_Login == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_Login)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_Logout = tclpkcs11_int_lookup_sym(handle, "C_Logout");
+	if (pkcs11_function_list->C_Logout == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_Logout)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_OpenSession = tclpkcs11_int_lookup_sym(handle, "C_OpenSession");
+	if (pkcs11_function_list->C_OpenSession == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_OpenSession)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_Sign = tclpkcs11_int_lookup_sym(handle, "C_Sign");
+	if (pkcs11_function_list->C_Sign == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_Sign)", -1));
+
+		return(TCL_ERROR);
+	}
+
+	pkcs11_function_list->C_SignInit = tclpkcs11_int_lookup_sym(handle, "C_SignInit");
+	if (pkcs11_function_list->C_SignInit == NULL) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data (missing C_SignInit)", -1));
+
+		return(TCL_ERROR);
+	}
+#endif
 
 	initargs.CreateMutex = tclpkcs11_create_mutex;
 	initargs.DestroyMutex = tclpkcs11_destroy_mutex;
@@ -932,6 +1089,7 @@ MODULE_SCOPE int tclpkcs11_list_certs(ClientData cd, Tcl_Interp *interp, int obj
 			}
 
 			curr_attr->pValue = NULL;
+			curr_attr->ulValueLen = 0;
 		}
 
 		/* Determine size of values to allocate */
@@ -1207,9 +1365,15 @@ MODULE_SCOPE int tclpkcs11_logout(ClientData cd, Tcl_Interp *interp, int objc, T
 
 	chk_rv = handle->pkcs11->C_Logout(handle->session);
 	if (chk_rv != CKR_OK) {
-		Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
+		if (chk_rv == CKR_DEVICE_REMOVED) {
+			handle->pkcs11->C_CloseSession(handle->session);
+			handle->session = -1;
+			handle->session_slot = -1;
+		} else {
+			Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
 
-		return(TCL_ERROR);
+			return(TCL_ERROR);
+		}
 	}
 
 	Tcl_SetObjResult(interp, Tcl_NewBooleanObj(1));
@@ -1232,6 +1396,7 @@ MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *i
 	int tcl_keylist_llength, idx;
 	int input_len;
 	CK_ULONG resultbuf_len;
+	int sign;
 	int tcl_rv;
 
 	CK_SLOT_ID slotid;
@@ -1419,7 +1584,7 @@ MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *i
 	handle->pkcs11->C_FindObjectsFinal(handle->session);
 
 	if (foundObjs < 1) {
-		Tcl_SetObjResult(interp, Tcl_NewStringObj("unable to find private key that cooresponds to this certificate", -1));
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("PKCS11_ERROR MAYBE_LOGIN", -1));
 
 		return(TCL_ERROR);
 	}
@@ -1427,15 +1592,45 @@ MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *i
 	/* Perform the PKI operation (encrypt/decrypt) */
 	input = Tcl_GetByteArrayFromObj(tcl_input, &input_len);
 	if (encrypt) {
-		chk_rv = handle->pkcs11->C_SignInit(handle->session, &mechanism, hObject);
+		sign = 0;
+		chk_rv = handle->pkcs11->C_EncryptInit(handle->session, &mechanism, hObject);
 		if (chk_rv != CKR_OK) {
-			Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
+			if (chk_rv == CKR_FUNCTION_NOT_SUPPORTED) {
+				sign = 1;
+				chk_rv = handle->pkcs11->C_SignInit(handle->session, &mechanism, hObject);
+				if (chk_rv != CKR_OK) {
+					Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
 
-			return(TCL_ERROR);
+					return(TCL_ERROR);
+				}
+			}
 		}
 
 		resultbuf_len = sizeof(resultbuf);
-		chk_rv = handle->pkcs11->C_Sign(handle->session, input, input_len, resultbuf, &resultbuf_len);
+		if (!sign) {
+			chk_rv = handle->pkcs11->C_Encrypt(handle->session, input, input_len, resultbuf, &resultbuf_len);
+		} else {
+			/* Some PKCS#11 drivers will not accept pre-padded input, so we must unpad it here */
+			if (input_len > 3) {
+				if (input[0] == 0x00 && input[1] == 0x01) {
+					input = input + 2;
+					input_len -= 2;
+					while (*input == 0xff && input_len > 0) {
+						input++;
+						input_len--;
+					}
+
+					if (input_len) {
+						if (input[0] == 0x00) {
+							input++;
+							input_len--;
+						}
+					}
+				}
+			}
+
+			chk_rv = handle->pkcs11->C_Sign(handle->session, input, input_len, resultbuf, &resultbuf_len);
+		}
 		if (chk_rv != CKR_OK) {
 			if (chk_rv == CKR_BUFFER_TOO_SMALL) {
 				/* Terminate decryption operation */

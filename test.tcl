@@ -44,7 +44,7 @@ foreach certinfo_list $certs {
 	if {[catch {
 		set plain  [pki::decrypt -binary -priv -- $cipher $certinfo_list]
 	} err]} {
-		if {$err == "PKCS11_ERROR USER_NOT_LOGGED_IN"} {
+		if {$err == "PKCS11_ERROR USER_NOT_LOGGED_IN" || $err == "PKCS11_ERROR MAYBE_LOGIN"} {
 			# Login and try it again...
 			puts -nonewline " *** ENTER PIN: "
 			flush stdout
@@ -56,7 +56,7 @@ foreach certinfo_list $certs {
 		} else {
 			puts stderr "$::errorInfo"
 
-			exit 1
+			break
 		}
 	}
 
