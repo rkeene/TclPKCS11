@@ -2,7 +2,7 @@
 
 make distclean
 
-./configure
+CFLAGS='-Wall -Werror -W' ./configure
 
 # Replace version with the version
 . build/makearch.info

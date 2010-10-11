@@ -10,7 +10,7 @@ RC=i586-mingw32msvc-windres
 STRIP=i586-mingw32msvc-strip
 export AR CC CXX RANLIB RC STRIP
 
-./configure --host=i586-mingw32msvc --with-tcl=build/win32
+CFLAGS='-Wall -Werror -W' ./configure --host=i586-mingw32msvc --with-tcl=build/win32
 
 # Replace version with the version
 . build/makearch.info
