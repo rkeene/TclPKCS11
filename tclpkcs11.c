@@ -59,6 +59,7 @@ struct tclpkcs11_handle {
 	CK_FUNCTION_LIST_PTR pkcs11;
 
 	/* Session Management */
+	int session_active;
 	CK_SLOT_ID session_slot;
 	CK_SESSION_HANDLE session;
 };
@@ -367,15 +368,14 @@ MODULE_SCOPE int tclpkcs11_start_session(struct tclpkcs11_handle *handle, CK_SLO
 	CK_SESSION_HANDLE tmp_session;
 	CK_RV chk_rv;
 
-	if (handle->session != -1) {
+	if (handle->session_active) {
 		if (handle->session_slot == slot) {
 			return(CKR_OK);
 		}
 
 		/* Close the existing session and create a new one */
+		handle->session_active = 0;
 		chk_rv = handle->pkcs11->C_CloseSession(handle->session);
-		handle->session = -1;
-		handle->session_slot = -1;
 		if (chk_rv != CKR_OK) {
 			return(chk_rv);
 		}
@@ -384,14 +384,13 @@ MODULE_SCOPE int tclpkcs11_start_session(struct tclpkcs11_handle *handle, CK_SLO
 	chk_rv = handle->pkcs11->C_OpenSession(slot, CKF_SERIAL_SESSION, NULL, NULL, &tmp_session);
 	if (chk_rv != CKR_OK) {
 		handle->pkcs11->C_CloseSession(handle->session);
-		handle->session = -1;
-		handle->session_slot = -1;
 
 		return(chk_rv);
 	}
 
 	handle->session = tmp_session;
 	handle->session_slot = slot;
+	handle->session_active = 1;
 
 	return(CKR_OK);
 }
@@ -399,10 +398,9 @@ MODULE_SCOPE int tclpkcs11_start_session(struct tclpkcs11_handle *handle, CK_SLO
 MODULE_SCOPE int tclpkcs11_close_session(struct tclpkcs11_handle *handle) {
 	CK_RV chk_rv;
 
-	if (handle->session != -1) {
+	if (handle->session_active) {
+		handle->session_active = 0;
 		chk_rv = handle->pkcs11->C_CloseSession(handle->session);
-		handle->session = -1;
-		handle->session_slot = -1;
 
 		if (chk_rv != CKR_OK) {
 			return(chk_rv);
@@ -586,8 +584,7 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 	/* Initialize the per-handle structure */
 	new_handle->base = handle;
 	new_handle->pkcs11 = pkcs11_function_list;
-	new_handle->session = -1;
-	new_handle->session_slot = -1;
+	new_handle->session_active = 0;
 
 	Tcl_SetHashValue(tcl_handle_entry, (ClientData) new_handle);
 
@@ -1223,9 +1220,9 @@ MODULE_SCOPE int tclpkcs11_logout(ClientData cd, Tcl_Interp *interp, int objc, T
 	chk_rv = handle->pkcs11->C_Logout(handle->session);
 	if (chk_rv != CKR_OK) {
 		if (chk_rv == CKR_DEVICE_REMOVED) {
+			handle->session_active = 0;
+
 			handle->pkcs11->C_CloseSession(handle->session);
-			handle->session = -1;
-			handle->session_slot = -1;
 		} else {
 			Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
 
