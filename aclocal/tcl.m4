@@ -55,10 +55,14 @@ AC_DEFUN(TCLEXT_INIT, [
 	if test "$TCL_SUPPORTS_STUBS" = "1"; then
 		AC_DEFINE([USE_TCL_STUBS], [1], [Define if you are using the Tcl Stubs Mechanism])
 
+		TCL_STUB_LIB_SPEC="`eval echo "${TCL_STUB_LIB_SPEC}"`"
 		LIBS="${LIBS} ${TCL_STUB_LIB_SPEC}"
 	else
+		TCL_LIB_SPEC="`eval echo "${TCL_LIB_SPEC}"`"
 		LIBS="${LIBS} ${TCL_LIB_SPEC}"
 	fi
+
+	TCL_INCLUDE_SPEC="`eval echo "${TCL_INCLUDE_SPEC}"`"
 
 	CFLAGS="${CFLAGS} ${TCL_INCLUDE_SPEC}"
 	CPPFLAGS="${CPPFLAGS} ${TCL_INCLUDE_SPEC}"
