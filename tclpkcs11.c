@@ -26,18 +26,13 @@
 #endif
 
 /* PKCS#11 Definitions for the local platform */
-#ifndef _WIN32
-#  define CK_PTR *
-#  define CK_DECLARE_FUNCTION(rv, func) rv func
-#  define CK_DECLARE_FUNCTION_POINTER(rv, func) rv (CK_PTR func)
-#  define CK_CALLBACK_FUNCTION(rv, func) rv (CK_PTR func)
-#  define CK_NULL_PTR ((void *) 0)
-#else
-#  define CK_PTR *
-#  define CK_DECLARE_FUNCTION(rv, func) rv __declspec(dllimport) func
-#  define CK_DECLARE_FUNCTION_POINTER(rv, func) rv __declspec(dllimport) (CK_PTR func)
-#  define CK_CALLBACK_FUNCTION(rv, func) rv (CK_PTR func)
-#  define CK_NULL_PTR ((void *) 0)
+#define CK_PTR *
+#define CK_DECLARE_FUNCTION(rv, func) rv func
+#define CK_DECLARE_FUNCTION_POINTER(rv, func) rv (CK_PTR func)
+#define CK_CALLBACK_FUNCTION(rv, func) rv (CK_PTR func)
+#define CK_NULL_PTR ((void *) 0)
+
+#ifdef _WIN32
 #  pragma pack(push, cryptoki, 1)
 #endif
 
