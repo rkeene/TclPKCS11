@@ -7,8 +7,9 @@ LIBS = @LIBS@
 
 all: tclpkcs11.@SHOBJEXT@
 
-pkcs11.h: pkcs11f.h pkcs11t.h
-tclpkcs11.o: tclpkcs11.c pkcs11.h
+tclpkcs11.o: tclpkcs11.c pkcs11.h pkcs11f.h pkcs11t.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o tclpkcs11.o -c tclpkcs11.c
+
 tclpkcs11.@SHOBJEXT@: tclpkcs11.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tclpkcs11.@SHOBJEXT@ tclpkcs11.o $(LIBS)
 
