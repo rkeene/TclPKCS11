@@ -40,6 +40,7 @@ AC_DEFUN(TCLEXT_LOAD_TCLCONFIG, [
 		AC_MSG_ERROR([unable to load tclConfig.sh])
 	fi
 
+
 	AC_MSG_RESULT([found])
 ])
 
@@ -67,6 +68,9 @@ AC_DEFUN(TCLEXT_INIT, [
 	CFLAGS="${CFLAGS} ${TCL_INCLUDE_SPEC}"
 	CPPFLAGS="${CPPFLAGS} ${TCL_INCLUDE_SPEC}"
 	DEFS="${DEFS} ${TCL_DEFS}"
+
+	dnl Needed for package installation
+	AC_SUBST(TCL_PACKAGE_PATH)
 
 	AC_SUBST(LIBS)
 ])
