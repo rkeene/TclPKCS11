@@ -70,6 +70,7 @@ AC_DEFUN(TCLEXT_INIT, [
 	DEFS="${DEFS} ${TCL_DEFS}"
 
 	dnl Needed for package installation
+	TCL_PACKAGE_PATH="`echo "${TCL_PACKAGE_PATH}" | sed 's@  *$''@@'`"
 	AC_SUBST(TCL_PACKAGE_PATH)
 
 	AC_SUBST(LIBS)
