@@ -1245,7 +1245,7 @@ MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *i
 	int tcl_keylist_llength, idx;
 	int input_len;
 	CK_ULONG resultbuf_len;
-	int sign;
+	int sign, terminate;
 	int tcl_rv;
 
 	CK_SLOT_ID slotid;
@@ -1480,12 +1480,25 @@ MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *i
 
 			chk_rv = handle->pkcs11->C_Sign(handle->session, input, input_len, resultbuf, &resultbuf_len);
 		}
-		if (chk_rv != CKR_OK) {
-			if (chk_rv == CKR_BUFFER_TOO_SMALL) {
-				/* Terminate decryption operation */
-				handle->pkcs11->C_DecryptFinal(handle->session, NULL, 0);
-			}
 
+		terminate = 0;
+		if (chk_rv == CKR_OK) {
+			terminate = 1;
+		} else {
+			if (chk_rv == CKR_BUFFER_TOO_SMALL) {
+				terminate = 1;
+			}
+		}
+
+		if (terminate) {
+			if (!sign) {
+				handle->pkcs11->C_EncryptFinal(handle->session, NULL, 0);
+			} else {
+				handle->pkcs11->C_SignFinal(handle->session, NULL, 0);
+			}
+		}
+
+		if (chk_rv != CKR_OK) {
 			Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
 
 			return(TCL_ERROR);
