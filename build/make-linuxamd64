@@ -1,13 +1,6 @@
 #! /bin/sh
 
-make distclean
+TARGET="x86_64-unknown-linux-gnu"
+SHORTTARGET="linuxamd64"
 
-CC='/home/rkeene/root/cross-compilers/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-gcc' ./configure --host='x86_64-unknown-linux-gnu' --with-tcl="$(pwd)/build/linuxamd64"
-
-# Replace version with the version
-. build/makearch.info
-sed "s/@@VERS@@/${VERS}/g" Makefile > Makefile.new && cat Makefile.new > Makefile
-rm -f Makefile.new
-
-gmake
-/home/rkeene/root/cross-compilers/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-strip -x tclpkcs11.so
+. build/make-cc-common.sh

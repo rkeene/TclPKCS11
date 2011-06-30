@@ -1,0 +1,6 @@
+#! /bin/sh
+
+TARGET="mipsel-unknown-linux-uclibc"
+SHORTTARGET="linuxmipsel"
+
+. build/make-cc-common.sh
