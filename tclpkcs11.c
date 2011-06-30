@@ -328,31 +328,43 @@ MODULE_SCOPE CK_RV tclpkcs11_create_mutex(void **mutex) {
 }
 
 MODULE_SCOPE CK_RV tclpkcs11_lock_mutex(void *mutex) {
+	Tcl_Mutex *tcl_mutex;
+
 	if (!mutex) {
 		return(CKR_GENERAL_ERROR);
 	}
 
-	Tcl_MutexLock(*mutex);
+	tcl_mutex = mutex;
+
+	Tcl_MutexLock(tcl_mutex);
 
 	return(CKR_OK);
 }
 
 MODULE_SCOPE CK_RV tclpkcs11_unlock_mutex(void *mutex) {
+	Tcl_Mutex *tcl_mutex;
+
 	if (!mutex) {
 		return(CKR_GENERAL_ERROR);
 	}
 
-	Tcl_MutexUnlock(*mutex);
+	tcl_mutex = mutex;
+
+	Tcl_MutexUnlock(tcl_mutex);
 
 	return(CKR_OK);
 }
 
 MODULE_SCOPE CK_RV tclpkcs11_destroy_mutex(void *mutex) {
+	Tcl_Mutex *tcl_mutex;
+
 	if (!mutex) {
 		return(CKR_GENERAL_ERROR);
 	}
 
-	Tcl_MutexFinalize(*mutex);
+	tcl_mutex = mutex;
+
+	Tcl_MutexFinalize(tcl_mutex);
 	ckfree(mutex);
 
 	return(CKR_OK);
