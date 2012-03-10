@@ -1,5 +1,5 @@
 #! /bin/bash
 
-cat aclocal/*.m4 > aclocal.m4
+aclocal -I aclocal
 autoconf
 rm -rf autom4te.cache
