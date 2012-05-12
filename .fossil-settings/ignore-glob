@@ -1,3 +1,5 @@
+.tmp
+.tmp/*
 Makefile
 Makefile/*
 aclocal.m4
