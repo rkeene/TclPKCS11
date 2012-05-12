@@ -1,6 +1,6 @@
 #! /bin/sh
 
-TARGET="x86_64-unknown-linux-gnu"
-SHORTTARGET="linux-amd64"
+TARGET="x86_64-unknown-freebsd8"
+SHORTTARGET="freebsd-amd64"
 
 . build/make-cc-common.sh

@@ -8,7 +8,8 @@ mkdir .tmp
 (
 	cd .tmp || exit 1
 
-	wget -O sdk.tar.gz "http://www.rkeene.org/devel/kitcreator/kitbuild/nightly/libtclkit-8.5.11-${SHORTTARGET}-kitdll-sdk.tar.gz"
+	wget -O sdk.tar.gz "http://www.rkeene.org/devel/kitcreator/kitbuild/nightly/libtclkit-8.5.11-${SHORTTARGET}-kitdll-sdk.tar.gz" || \
+		wget -O sdk.tar.gz "http://www.rkeene.org/devel/kitcreator/kitbuild/nightly/libtclkit-8.5.11-${SHORTTARGET}-kitdll-xcompile-sdk.tar.gz"
 
 	tar --strip-components=1 -xf sdk.tar.gz
 
