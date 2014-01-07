@@ -535,6 +535,8 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 	if (!getFuncList) {
 		Tcl_SetObjResult(interp, Tcl_NewStringObj("unable to locate C_GetFunctionList symbol in PKCS#11 module", -1));
 
+		tclpkcs11_int_unload_module(handle);
+
 		return(TCL_ERROR);
 	}
 
@@ -542,17 +544,23 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 	if (chk_rv != CKR_OK) {
 		Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
 
+		tclpkcs11_int_unload_module(handle);
+
 		return(TCL_ERROR);
 	}
 
 	if (!pkcs11_function_list) {
 		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned invalid data", -1));
 
+		tclpkcs11_int_unload_module(handle);
+
 		return(TCL_ERROR);
 	}
 
 	if (!pkcs11_function_list->C_Initialize) {
 		Tcl_SetObjResult(interp, Tcl_NewStringObj("C_GetFunctionList returned incomplete data", -1));
+
+		tclpkcs11_int_unload_module(handle);
 
 		return(TCL_ERROR);
 	}
@@ -569,6 +577,8 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 	if (chk_rv != CKR_OK) {
 		Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
 
+		tclpkcs11_int_unload_module(handle);
+
 		return(TCL_ERROR);
 	}
 
@@ -581,6 +591,12 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 	tcl_handle_entry = Tcl_CreateHashEntry(&interpdata->handles, (const char *) tcl_handle, &is_new_entry);
 	if (!tcl_handle_entry) {
 		Tcl_SetObjResult(interp, Tcl_NewStringObj("unable to create new hash entry", -1));
+
+		if (pkcs11_function_list->C_Finalize) {
+			pkcs11_function_list->C_Finalize(NULL);
+		}
+
+		tclpkcs11_int_unload_module(handle);
 
 		return(TCL_ERROR);
 	}
