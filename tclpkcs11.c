@@ -1568,6 +1568,89 @@ MODULE_SCOPE int tclpkcs11_decrypt(ClientData cd, Tcl_Interp *interp, int objc, 
 	return(tclpkcs11_perform_pki(0, cd, interp, objc, objv));
 }
 
+MODULE_SCOPE int tclpkcs11_setpin(ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
+	struct tclpkcs11_interpdata *interpdata;
+	struct tclpkcs11_handle *handle;
+	Tcl_HashEntry *tcl_handle_entry;
+	Tcl_Obj *tcl_handle, *tcl_slotid, *tcl_oldpassword, *tcl_newpassword;
+	long slotid_long;
+	char *oldpassword, *newpassword;
+	int oldpassword_len, newpassword_len;
+	int tcl_rv;
+
+	CK_SLOT_ID slotid;
+	CK_RV chk_rv;
+
+	if (!cd) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("invalid clientdata", -1));
+
+		return(TCL_ERROR);
+	}
+
+	if (objc != 5) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("wrong # args: should be \"pki::pkcs11::setpin handle slot oldpassword newpassword\"", -1));
+
+		return(TCL_ERROR);
+	}
+
+	tcl_handle = objv[1];
+	tcl_slotid = objv[2];
+	tcl_oldpassword = objv[3];
+	tcl_newpassword = objv[4];
+
+	interpdata = (struct tclpkcs11_interpdata *) cd;
+
+	tcl_handle_entry = Tcl_FindHashEntry(&interpdata->handles, (const char *) tcl_handle);
+	if (!tcl_handle_entry) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("invalid handle", -1));
+
+		return(TCL_ERROR);
+	}
+
+	handle = (struct tclpkcs11_handle *) Tcl_GetHashValue(tcl_handle_entry);
+	if (!handle) {
+		Tcl_SetObjResult(interp, Tcl_NewStringObj("invalid handle", -1));
+
+		return(TCL_ERROR);
+	}
+
+	tcl_rv = Tcl_GetLongFromObj(interp, tcl_slotid, &slotid_long);
+	if (tcl_rv != TCL_OK) {
+		return(tcl_rv);
+	}
+
+	slotid = slotid_long;
+
+	chk_rv = tclpkcs11_start_session(handle, slotid);
+	if (chk_rv != CKR_OK) {
+		Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
+
+		return(TCL_ERROR);
+	}
+
+	oldpassword = Tcl_GetStringFromObj(tcl_oldpassword, &oldpassword_len);
+	newpassword = Tcl_GetStringFromObj(tcl_newpassword, &newpassword_len);
+
+	chk_rv = handle->pkcs11->C_SetPIN(handle->session, (CK_UTF8CHAR_PTR) oldpassword, oldpassword_len, (CK_UTF8CHAR_PTR) newpassword, newpassword_len);
+	switch (chk_rv) {
+		case CKR_OK:
+		case CKR_USER_ALREADY_LOGGED_IN:
+			Tcl_SetObjResult(interp, Tcl_NewBooleanObj(1));
+
+			break;
+		case CKR_PIN_INCORRECT:
+			Tcl_SetObjResult(interp, Tcl_NewBooleanObj(0));
+
+			break;
+		default:
+			Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
+
+			return(TCL_ERROR);
+	}
+
+	return(TCL_OK);
+}
+
 MODULE_SCOPE void tclpkcs11_unloadall(ClientData cd) {
 	struct tclpkcs11_interpdata *interpdata;
 	struct tclpkcs11_handle *handle;
@@ -1670,6 +1753,11 @@ int Tclpkcs11_Init(Tcl_Interp *interp) {
 	}
 
 	tclCreatComm_ret = Tcl_CreateObjCommand(interp, "pki::pkcs11::decrypt", tclpkcs11_decrypt, interpdata, NULL);
+	if (!tclCreatComm_ret) {
+		return(TCL_ERROR);
+	}
+
+	tclCreatComm_ret = Tcl_CreateObjCommand(interp, "pki::pkcs11::setpin", tclpkcs11_setpin, interpdata, NULL);
 	if (!tclCreatComm_ret) {
 		return(TCL_ERROR);
 	}
