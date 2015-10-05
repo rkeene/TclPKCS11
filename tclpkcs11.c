@@ -420,7 +420,7 @@ MODULE_SCOPE int tclpkcs11_close_session(struct tclpkcs11_handle *handle) {
 /*
  * Platform Specific Functions 
  */
-MODULE_SCOPE void *tclpkcs11_int_load_module(const char *pathname) {
+MODULE_SCOPE void *tclpkcs11_int_load_module(const char *pathname, Tcl_Interp *interp) {
 #if defined(TCL_INCLUDES_LOADFILE)
 	int tcl_rv;
 	Tcl_Obj *pathnameObj;
@@ -432,7 +432,7 @@ MODULE_SCOPE void *tclpkcs11_int_load_module(const char *pathname) {
 
 	Tcl_IncrRefCount(pathnameObj);
 
-	tcl_rv = Tcl_LoadFile(NULL, pathnameObj, NULL, 0, NULL, new_handle);
+	tcl_rv = Tcl_LoadFile(interp, pathnameObj, NULL, 0, NULL, new_handle);
 
 	Tcl_DecrRefCount(pathnameObj);
 
@@ -532,7 +532,7 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 		return(TCL_ERROR);
 	}
 
-	handle = tclpkcs11_int_load_module(pathname);
+	handle = tclpkcs11_int_load_module(pathname, interp);
 	if (!handle) {
 		Tcl_SetObjResult(interp, Tcl_NewStringObj("unable to load", -1));
 
