@@ -423,11 +423,19 @@ MODULE_SCOPE int tclpkcs11_close_session(struct tclpkcs11_handle *handle) {
 MODULE_SCOPE void *tclpkcs11_int_load_module(const char *pathname) {
 #if defined(TCL_INCLUDES_LOADFILE)
 	int tcl_rv;
+	Tcl_Obj *pathnameObj;
 	Tcl_LoadHandle *new_handle;
 
 	new_handle = (Tcl_LoadHandle *) ckalloc(sizeof(*new_handle));
 
-	tcl_rv = Tcl_LoadFile(NULL, Tcl_NewStringObj(pathname, -1), NULL, 0, NULL, new_handle);
+	pathnameObj = Tcl_NewStringObj(pathname, -1);
+
+	Tcl_IncrRefCount(pathnameObj);
+
+	tcl_rv = Tcl_LoadFile(NULL, pathnameObj, NULL, 0, NULL, new_handle);
+
+	Tcl_DecrRefCount(pathnameObj);
+
 	if (tcl_rv != TCL_OK) {
 		return(NULL);
 	}
