@@ -32,7 +32,7 @@ clean:
 distclean: clean
 	rm -rf autom4te.cache
 	rm -f config.log config.status
-	rm -f pkgIndex.tcl
+	rm -f pkgIndex.tcl tclpkcs11.syms
 	rm -f Makefile
 
 mrproper: distclean
