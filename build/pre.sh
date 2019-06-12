@@ -1,8 +1,10 @@
 #! /bin/bash
 
-./build/autogen.sh
-rm -f aclocal.m4
+./autogen.sh
+rm -rf aclocal
 
-rm -rf work
+cat Makefile.in  | sed '/^mrproper:/,/^$/ d' > Makefile.in.new
+cat Makefile.in.new > Makefile.in
+rm -f Makefile.in.new
 
 exit 0
