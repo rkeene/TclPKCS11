@@ -1,1 +1,9 @@
-package ifneeded pki::pkcs11 @PACKAGE_VERSION@ [list load [file join $dir tclpkcs11.@SHOBJEXT@] Tclpkcs11]
+package ifneeded pki::pkcs11 @PACKAGE_VERSION@ [list apply {{dir} {
+	if {{@TCLEXT_BUILD@} eq "shared"} {
+		set toLoad [file join $dir @EXTENSION_TARGET@]
+	} else {
+		set toLoad ""
+	}
+
+	load $toLoad Tclpkcs11
+}} $dir]
