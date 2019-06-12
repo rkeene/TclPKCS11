@@ -33,4 +33,7 @@ distclean: clean
 	rm -f pkgIndex.tcl
 	rm -f Makefile
 
-.PHONY: all install clean distclean
+mrproper: distclean
+	rm -f aclocal.m4 config.guess config.sub configure install-sh
+
+.PHONY: all install clean distclean mrproper

@@ -582,6 +582,18 @@ MODULE_SCOPE int tclpkcs11_load_module(ClientData cd, Tcl_Interp *interp, int ob
 	initargs.pReserved = NULL;
 
 	chk_rv = pkcs11_function_list->C_Initialize(&initargs);
+	if (chk_rv == CKR_CANT_LOCK) {
+		initargs.CreateMutex = NULL;
+		initargs.DestroyMutex = NULL;
+		initargs.LockMutex = NULL;
+		initargs.UnlockMutex = NULL;
+		initargs.flags = 0;
+		initargs.LibraryFlags = NULL;
+		initargs.pReserved = NULL;
+
+		chk_rv = pkcs11_function_list->C_Initialize(&initargs);
+	}
+
 	if (chk_rv != CKR_OK) {
 		Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
 
@@ -1706,7 +1718,7 @@ int Tclpkcs11_Init(Tcl_Interp *interp) {
 	const char *tclInitStubs_ret;
 
 	/* Initialize Stubs */
-	tclInitStubs_ret = Tcl_InitStubs(interp, "8.4", 0);
+	tclInitStubs_ret = Tcl_InitStubs(interp, TCL_PATCH_LEVEL, 0);
 	if (!tclInitStubs_ret) {
 		return(TCL_ERROR);
 	}
