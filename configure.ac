@@ -10,6 +10,9 @@ AC_GNU_SOURCE
 dnl Determine system information
 DC_CHK_OS_INFO
 
+dnl Perform Tcl Extension required stuff
+TCLEXT_INIT
+
 dnl Determine how to make shared objects
 if test "$TCLEXT_BUILD" != 'static'; then
 	dnl Determine how to make shared objects
@@ -35,9 +38,6 @@ AC_CHECK_FUNCS(dlopen shl_load)
 
 dnl Look for appropriate headers
 AC_CHECK_HEADERS(unistd.h stdlib.h string.h strings.h dlfcn.h dl.h)
-
-dnl Perform Tcl Extension required stuff
-TCLEXT_INIT
 
 dnl Setup a stable ABI
 DC_SETUP_STABLE_API([${srcdir}/tclpkcs11.vers], tclpkcs11.syms)

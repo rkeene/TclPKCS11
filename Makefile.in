@@ -8,26 +8,40 @@ INSTALL = @INSTALL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 TCL_PACKAGE_PATH = @TCL_PACKAGE_PATH@
 PACKAGE_INSTALL_DIR = $(TCL_PACKAGE_PATH)/tclpkcs11$(PACKAGE_VERSION)
+AR = @AR@
+RANLIB = @RANLIB@
 srcdir = @srcdir@
 
-all: tclpkcs11.@SHOBJEXT@
+all: @EXTENSION_TARGET@
 
 tclpkcs11.o: $(srcdir)/tclpkcs11.c $(srcdir)/pkcs11.h $(srcdir)/pkcs11f.h $(srcdir)/pkcs11t.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o tclpkcs11.o -c $(srcdir)/tclpkcs11.c
+ifneq (@TCLEXT_BUILD@,shared)
+	-@WEAKENSYMS@ tclpkcs11.o
+	-@REMOVESYMS@ tclpkcs11.o
+endif
 
-tclpkcs11.@SHOBJEXT@: tclpkcs11.o
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tclpkcs11.@SHOBJEXT@ tclpkcs11.o $(LIBS)
+ifeq (@TCLEXT_BUILD@,shared)
+@EXTENSION_TARGET@: tclpkcs11.o Makefile
+	rm -f @EXTENSION_TARGET@
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o @EXTENSION_TARGET@ tclpkcs11.o $(LIBS)
 	-@WEAKENSYMS@ @EXTENSION_TARGET@
 	-@REMOVESYMS@ @EXTENSION_TARGET@
+else
+@EXTENSION_TARGET@: tclpkcs11.o Makefile
+	rm -f @EXTENSION_TARGET@
+	$(AR) rc @EXTENSION_TARGET@ tclpkcs11.o
+	-$(RANLIB) @EXTENSION_TARGET@
+endif
 
-install: tclpkcs11.@SHOBJEXT@ pkgIndex.tcl
+install: @EXTENSION_TARGET@ pkgIndex.tcl
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 	$(INSTALL) -m 0644 pkgIndex.tcl "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
-	$(INSTALL) -m 0755 tclpkcs11.@SHOBJEXT@ "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
+	$(INSTALL) -m 0755 @EXTENSION_TARGET@ "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"
 
 clean:
-	rm -f tclpkcs11.@SHOBJEXT@ tclpkcs11.o
-	rm -f tclpkcs11.@SHOBJEXT@.a tclpkcs11.@SHOBJEXT@.def
+	rm -f @EXTENSION_TARGET@ tclpkcs11.o
+	rm -f @EXTENSION_TARGET@.a @EXTENSION_TARGET@.def
 
 distclean: clean
 	rm -rf autom4te.cache
