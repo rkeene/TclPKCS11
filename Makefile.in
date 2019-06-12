@@ -17,6 +17,8 @@ tclpkcs11.o: $(srcdir)/tclpkcs11.c $(srcdir)/pkcs11.h $(srcdir)/pkcs11f.h $(srcd
 
 tclpkcs11.@SHOBJEXT@: tclpkcs11.o
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) $(SHOBJLDFLAGS) -o tclpkcs11.@SHOBJEXT@ tclpkcs11.o $(LIBS)
+	-@WEAKENSYMS@ @EXTENSION_TARGET@
+	-@REMOVESYMS@ @EXTENSION_TARGET@
 
 install: tclpkcs11.@SHOBJEXT@ pkgIndex.tcl
 	$(INSTALL) -d "$(DESTDIR)$(PACKAGE_INSTALL_DIR)"

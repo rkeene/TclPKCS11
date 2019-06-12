@@ -1,0 +1,6 @@
+{
+	global:
+		Tclpkcs11_Init;
+	local:
+		*;
+};
