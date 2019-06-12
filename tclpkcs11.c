@@ -62,187 +62,284 @@ struct tclpkcs11_handle {
 /*
  * Tcl <--> PKCS11 Bridge Functions
  */ 
-MODULE_SCOPE Tcl_Obj *tclpkcs11_pkcs11_error(CK_RV errorCode) {
+#define tclpkcs11_pkcs11_error(x) INTtclpkcs11_pkcs11_error(x, __LINE__)
+MODULE_SCOPE Tcl_Obj *INTtclpkcs11_pkcs11_error(CK_RV errorCode, int lineNumber) {
+	Tcl_Obj *retval;
+
 	switch (errorCode) {
 		case CKR_OK:
-			return(Tcl_NewStringObj("PKCS11_OK OK", -1));
+			retval = Tcl_NewStringObj("PKCS11_OK OK", -1);
+			break;
 		case CKR_CANCEL:
-			return(Tcl_NewStringObj("PKCS11_ERROR CANCEL", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR CANCEL", -1);
+			break;
 		case CKR_HOST_MEMORY:
-			return(Tcl_NewStringObj("PKCS11_ERROR HOST_MEMORY", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR HOST_MEMORY", -1);
+			break;
 		case CKR_SLOT_ID_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR SLOT_ID_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SLOT_ID_INVALID", -1);
+			break;
 		case CKR_GENERAL_ERROR:
-			return(Tcl_NewStringObj("PKCS11_ERROR GENERAL_ERROR", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR GENERAL_ERROR", -1);
+			break;
 		case CKR_FUNCTION_FAILED:
-			return(Tcl_NewStringObj("PKCS11_ERROR FUNCTION_FAILED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR FUNCTION_FAILED", -1);
+			break;
 		case CKR_ARGUMENTS_BAD:
-			return(Tcl_NewStringObj("PKCS11_ERROR ARGUMENTS_BAD", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR ARGUMENTS_BAD", -1);
+			break;
 		case CKR_NO_EVENT:
-			return(Tcl_NewStringObj("PKCS11_ERROR NO_EVENT", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR NO_EVENT", -1);
+			break;
 		case CKR_NEED_TO_CREATE_THREADS:
-			return(Tcl_NewStringObj("PKCS11_ERROR NEED_TO_CREATE_THREADS", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR NEED_TO_CREATE_THREADS", -1);
+			break;
 		case CKR_CANT_LOCK:
-			return(Tcl_NewStringObj("PKCS11_ERROR CANT_LOCK", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR CANT_LOCK", -1);
+			break;
 		case CKR_ATTRIBUTE_READ_ONLY:
-			return(Tcl_NewStringObj("PKCS11_ERROR ATTRIBUTE_READ_ONLY", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR ATTRIBUTE_READ_ONLY", -1);
+			break;
 		case CKR_ATTRIBUTE_SENSITIVE:
-			return(Tcl_NewStringObj("PKCS11_ERROR ATTRIBUTE_SENSITIVE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR ATTRIBUTE_SENSITIVE", -1);
+			break;
 		case CKR_ATTRIBUTE_TYPE_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR ATTRIBUTE_TYPE_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR ATTRIBUTE_TYPE_INVALID", -1);
+			break;
 		case CKR_ATTRIBUTE_VALUE_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR ATTRIBUTE_VALUE_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR ATTRIBUTE_VALUE_INVALID", -1);
+			break;
 		case CKR_DATA_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR DATA_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR DATA_INVALID", -1);
+			break;
 		case CKR_DATA_LEN_RANGE:
-			return(Tcl_NewStringObj("PKCS11_ERROR DATA_LEN_RANGE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR DATA_LEN_RANGE", -1);
+			break;
 		case CKR_DEVICE_ERROR:
-			return(Tcl_NewStringObj("PKCS11_ERROR DEVICE_ERROR", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR DEVICE_ERROR", -1);
+			break;
 		case CKR_DEVICE_MEMORY:
-			return(Tcl_NewStringObj("PKCS11_ERROR DEVICE_MEMORY", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR DEVICE_MEMORY", -1);
+			break;
 		case CKR_DEVICE_REMOVED:
-			return(Tcl_NewStringObj("PKCS11_ERROR DEVICE_REMOVED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR DEVICE_REMOVED", -1);
+			break;
 		case CKR_ENCRYPTED_DATA_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR ENCRYPTED_DATA_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR ENCRYPTED_DATA_INVALID", -1);
+			break;
 		case CKR_ENCRYPTED_DATA_LEN_RANGE:
-			return(Tcl_NewStringObj("PKCS11_ERROR ENCRYPTED_DATA_LEN_RANGE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR ENCRYPTED_DATA_LEN_RANGE", -1);
+			break;
 		case CKR_FUNCTION_CANCELED:
-			return(Tcl_NewStringObj("PKCS11_ERROR FUNCTION_CANCELED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR FUNCTION_CANCELED", -1);
+			break;
 		case CKR_FUNCTION_NOT_PARALLEL:
-			return(Tcl_NewStringObj("PKCS11_ERROR FUNCTION_NOT_PARALLEL", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR FUNCTION_NOT_PARALLEL", -1);
+			break;
 		case CKR_FUNCTION_NOT_SUPPORTED:
-			return(Tcl_NewStringObj("PKCS11_ERROR FUNCTION_NOT_SUPPORTED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR FUNCTION_NOT_SUPPORTED", -1);
+			break;
 		case CKR_KEY_HANDLE_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR KEY_HANDLE_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR KEY_HANDLE_INVALID", -1);
+			break;
 		case CKR_KEY_SIZE_RANGE:
-			return(Tcl_NewStringObj("PKCS11_ERROR KEY_SIZE_RANGE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR KEY_SIZE_RANGE", -1);
+			break;
 		case CKR_KEY_TYPE_INCONSISTENT:
-			return(Tcl_NewStringObj("PKCS11_ERROR KEY_TYPE_INCONSISTENT", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR KEY_TYPE_INCONSISTENT", -1);
+			break;
 		case CKR_KEY_NOT_NEEDED:
-			return(Tcl_NewStringObj("PKCS11_ERROR KEY_NOT_NEEDED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR KEY_NOT_NEEDED", -1);
+			break;
 		case CKR_KEY_CHANGED:
-			return(Tcl_NewStringObj("PKCS11_ERROR KEY_CHANGED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR KEY_CHANGED", -1);
+			break;
 		case CKR_KEY_NEEDED:
-			return(Tcl_NewStringObj("PKCS11_ERROR KEY_NEEDED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR KEY_NEEDED", -1);
+			break;
 		case CKR_KEY_INDIGESTIBLE:
-			return(Tcl_NewStringObj("PKCS11_ERROR KEY_INDIGESTIBLE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR KEY_INDIGESTIBLE", -1);
+			break;
 		case CKR_KEY_FUNCTION_NOT_PERMITTED:
-			return(Tcl_NewStringObj("PKCS11_ERROR KEY_FUNCTION_NOT_PERMITTED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR KEY_FUNCTION_NOT_PERMITTED", -1);
+			break;
 		case CKR_KEY_NOT_WRAPPABLE:
-			return(Tcl_NewStringObj("PKCS11_ERROR KEY_NOT_WRAPPABLE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR KEY_NOT_WRAPPABLE", -1);
+			break;
 		case CKR_KEY_UNEXTRACTABLE:
-			return(Tcl_NewStringObj("PKCS11_ERROR KEY_UNEXTRACTABLE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR KEY_UNEXTRACTABLE", -1);
+			break;
 		case CKR_MECHANISM_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR MECHANISM_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR MECHANISM_INVALID", -1);
+			break;
 		case CKR_MECHANISM_PARAM_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR MECHANISM_PARAM_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR MECHANISM_PARAM_INVALID", -1);
+			break;
 		case CKR_OBJECT_HANDLE_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR OBJECT_HANDLE_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR OBJECT_HANDLE_INVALID", -1);
+			break;
 		case CKR_OPERATION_ACTIVE:
-			return(Tcl_NewStringObj("PKCS11_ERROR OPERATION_ACTIVE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR OPERATION_ACTIVE", -1);
+			break;
 		case CKR_OPERATION_NOT_INITIALIZED:
-			return(Tcl_NewStringObj("PKCS11_ERROR OPERATION_NOT_INITIALIZED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR OPERATION_NOT_INITIALIZED", -1);
+			break;
 		case CKR_PIN_INCORRECT:
-			return(Tcl_NewStringObj("PKCS11_ERROR PIN_INCORRECT", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR PIN_INCORRECT", -1);
+			break;
 		case CKR_PIN_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR PIN_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR PIN_INVALID", -1);
+			break;
 		case CKR_PIN_LEN_RANGE:
-			return(Tcl_NewStringObj("PKCS11_ERROR PIN_LEN_RANGE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR PIN_LEN_RANGE", -1);
+			break;
 		case CKR_PIN_EXPIRED:
-			return(Tcl_NewStringObj("PKCS11_ERROR PIN_EXPIRED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR PIN_EXPIRED", -1);
+			break;
 		case CKR_PIN_LOCKED:
-			return(Tcl_NewStringObj("PKCS11_ERROR PIN_LOCKED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR PIN_LOCKED", -1);
+			break;
 		case CKR_SESSION_CLOSED:
-			return(Tcl_NewStringObj("PKCS11_ERROR SESSION_CLOSED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SESSION_CLOSED", -1);
+			break;
 		case CKR_SESSION_COUNT:
-			return(Tcl_NewStringObj("PKCS11_ERROR SESSION_COUNT", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SESSION_COUNT", -1);
+			break;
 		case CKR_SESSION_HANDLE_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR SESSION_HANDLE_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SESSION_HANDLE_INVALID", -1);
+			break;
 		case CKR_SESSION_PARALLEL_NOT_SUPPORTED:
-			return(Tcl_NewStringObj("PKCS11_ERROR SESSION_PARALLEL_NOT_SUPPORTED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SESSION_PARALLEL_NOT_SUPPORTED", -1);
+			break;
 		case CKR_SESSION_READ_ONLY:
-			return(Tcl_NewStringObj("PKCS11_ERROR SESSION_READ_ONLY", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SESSION_READ_ONLY", -1);
+			break;
 		case CKR_SESSION_EXISTS:
-			return(Tcl_NewStringObj("PKCS11_ERROR SESSION_EXISTS", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SESSION_EXISTS", -1);
+			break;
 		case CKR_SESSION_READ_ONLY_EXISTS:
-			return(Tcl_NewStringObj("PKCS11_ERROR SESSION_READ_ONLY_EXISTS", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SESSION_READ_ONLY_EXISTS", -1);
+			break;
 		case CKR_SESSION_READ_WRITE_SO_EXISTS:
-			return(Tcl_NewStringObj("PKCS11_ERROR SESSION_READ_WRITE_SO_EXISTS", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SESSION_READ_WRITE_SO_EXISTS", -1);
+			break;
 		case CKR_SIGNATURE_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR SIGNATURE_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SIGNATURE_INVALID", -1);
+			break;
 		case CKR_SIGNATURE_LEN_RANGE:
-			return(Tcl_NewStringObj("PKCS11_ERROR SIGNATURE_LEN_RANGE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SIGNATURE_LEN_RANGE", -1);
+			break;
 		case CKR_TEMPLATE_INCOMPLETE:
-			return(Tcl_NewStringObj("PKCS11_ERROR TEMPLATE_INCOMPLETE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR TEMPLATE_INCOMPLETE", -1);
+			break;
 		case CKR_TEMPLATE_INCONSISTENT:
-			return(Tcl_NewStringObj("PKCS11_ERROR TEMPLATE_INCONSISTENT", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR TEMPLATE_INCONSISTENT", -1);
+			break;
 		case CKR_TOKEN_NOT_PRESENT:
-			return(Tcl_NewStringObj("PKCS11_ERROR TOKEN_NOT_PRESENT", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR TOKEN_NOT_PRESENT", -1);
+			break;
 		case CKR_TOKEN_NOT_RECOGNIZED:
-			return(Tcl_NewStringObj("PKCS11_ERROR TOKEN_NOT_RECOGNIZED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR TOKEN_NOT_RECOGNIZED", -1);
+			break;
 		case CKR_TOKEN_WRITE_PROTECTED:
-			return(Tcl_NewStringObj("PKCS11_ERROR TOKEN_WRITE_PROTECTED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR TOKEN_WRITE_PROTECTED", -1);
+			break;
 		case CKR_UNWRAPPING_KEY_HANDLE_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR UNWRAPPING_KEY_HANDLE_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR UNWRAPPING_KEY_HANDLE_INVALID", -1);
+			break;
 		case CKR_UNWRAPPING_KEY_SIZE_RANGE:
-			return(Tcl_NewStringObj("PKCS11_ERROR UNWRAPPING_KEY_SIZE_RANGE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR UNWRAPPING_KEY_SIZE_RANGE", -1);
+			break;
 		case CKR_UNWRAPPING_KEY_TYPE_INCONSISTENT:
-			return(Tcl_NewStringObj("PKCS11_ERROR UNWRAPPING_KEY_TYPE_INCONSISTENT", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR UNWRAPPING_KEY_TYPE_INCONSISTENT", -1);
+			break;
 		case CKR_USER_ALREADY_LOGGED_IN:
-			return(Tcl_NewStringObj("PKCS11_ERROR USER_ALREADY_LOGGED_IN", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR USER_ALREADY_LOGGED_IN", -1);
+			break;
 		case CKR_USER_NOT_LOGGED_IN:
-			return(Tcl_NewStringObj("PKCS11_ERROR USER_NOT_LOGGED_IN", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR USER_NOT_LOGGED_IN", -1);
+			break;
 		case CKR_USER_PIN_NOT_INITIALIZED:
-			return(Tcl_NewStringObj("PKCS11_ERROR USER_PIN_NOT_INITIALIZED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR USER_PIN_NOT_INITIALIZED", -1);
+			break;
 		case CKR_USER_TYPE_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR USER_TYPE_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR USER_TYPE_INVALID", -1);
+			break;
 		case CKR_USER_ANOTHER_ALREADY_LOGGED_IN:
-			return(Tcl_NewStringObj("PKCS11_ERROR USER_ANOTHER_ALREADY_LOGGED_IN", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR USER_ANOTHER_ALREADY_LOGGED_IN", -1);
+			break;
 		case CKR_USER_TOO_MANY_TYPES:
-			return(Tcl_NewStringObj("PKCS11_ERROR USER_TOO_MANY_TYPES", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR USER_TOO_MANY_TYPES", -1);
+			break;
 		case CKR_WRAPPED_KEY_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR WRAPPED_KEY_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR WRAPPED_KEY_INVALID", -1);
+			break;
 		case CKR_WRAPPED_KEY_LEN_RANGE:
-			return(Tcl_NewStringObj("PKCS11_ERROR WRAPPED_KEY_LEN_RANGE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR WRAPPED_KEY_LEN_RANGE", -1);
+			break;
 		case CKR_WRAPPING_KEY_HANDLE_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR WRAPPING_KEY_HANDLE_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR WRAPPING_KEY_HANDLE_INVALID", -1);
+			break;
 		case CKR_WRAPPING_KEY_SIZE_RANGE:
-			return(Tcl_NewStringObj("PKCS11_ERROR WRAPPING_KEY_SIZE_RANGE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR WRAPPING_KEY_SIZE_RANGE", -1);
+			break;
 		case CKR_WRAPPING_KEY_TYPE_INCONSISTENT:
-			return(Tcl_NewStringObj("PKCS11_ERROR WRAPPING_KEY_TYPE_INCONSISTENT", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR WRAPPING_KEY_TYPE_INCONSISTENT", -1);
+			break;
 		case CKR_RANDOM_SEED_NOT_SUPPORTED:
-			return(Tcl_NewStringObj("PKCS11_ERROR RANDOM_SEED_NOT_SUPPORTED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR RANDOM_SEED_NOT_SUPPORTED", -1);
+			break;
 		case CKR_RANDOM_NO_RNG:
-			return(Tcl_NewStringObj("PKCS11_ERROR RANDOM_NO_RNG", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR RANDOM_NO_RNG", -1);
+			break;
 		case CKR_DOMAIN_PARAMS_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR DOMAIN_PARAMS_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR DOMAIN_PARAMS_INVALID", -1);
+			break;
 		case CKR_BUFFER_TOO_SMALL:
-			return(Tcl_NewStringObj("PKCS11_ERROR BUFFER_TOO_SMALL", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR BUFFER_TOO_SMALL", -1);
+			break;
 		case CKR_SAVED_STATE_INVALID:
-			return(Tcl_NewStringObj("PKCS11_ERROR SAVED_STATE_INVALID", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR SAVED_STATE_INVALID", -1);
+			break;
 		case CKR_INFORMATION_SENSITIVE:
-			return(Tcl_NewStringObj("PKCS11_ERROR INFORMATION_SENSITIVE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR INFORMATION_SENSITIVE", -1);
+			break;
 		case CKR_STATE_UNSAVEABLE:
-			return(Tcl_NewStringObj("PKCS11_ERROR STATE_UNSAVEABLE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR STATE_UNSAVEABLE", -1);
+			break;
 		case CKR_CRYPTOKI_NOT_INITIALIZED:
-			return(Tcl_NewStringObj("PKCS11_ERROR CRYPTOKI_NOT_INITIALIZED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR CRYPTOKI_NOT_INITIALIZED", -1);
+			break;
 		case CKR_CRYPTOKI_ALREADY_INITIALIZED:
-			return(Tcl_NewStringObj("PKCS11_ERROR CRYPTOKI_ALREADY_INITIALIZED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR CRYPTOKI_ALREADY_INITIALIZED", -1);
+			break;
 		case CKR_MUTEX_BAD:
-			return(Tcl_NewStringObj("PKCS11_ERROR MUTEX_BAD", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR MUTEX_BAD", -1);
+			break;
 		case CKR_MUTEX_NOT_LOCKED:
-			return(Tcl_NewStringObj("PKCS11_ERROR MUTEX_NOT_LOCKED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR MUTEX_NOT_LOCKED", -1);
+			break;
 		case CKR_NEW_PIN_MODE:
-			return(Tcl_NewStringObj("PKCS11_ERROR NEW_PIN_MODE", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR NEW_PIN_MODE", -1);
+			break;
 		case CKR_NEXT_OTP:
-			return(Tcl_NewStringObj("PKCS11_ERROR NEXT_OTP", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR NEXT_OTP", -1);
+			break;
 		case CKR_FUNCTION_REJECTED:
-			return(Tcl_NewStringObj("PKCS11_ERROR FUNCTION_REJECTED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR FUNCTION_REJECTED", -1);
+			break;
 		case CKR_VENDOR_DEFINED:
-			return(Tcl_NewStringObj("PKCS11_ERROR VENDOR_DEFINED", -1));
+			retval = Tcl_NewStringObj("PKCS11_ERROR VENDOR_DEFINED", -1);
+			break;
 	}
 
-	return(Tcl_NewStringObj("PKCS11_ERROR UNKNOWN", -1));
+	if (!retval) {
+		retval = Tcl_NewStringObj("PKCS11_ERROR UNKNOWN", -1);
+	}
+
+	Tcl_AppendPrintfToObj(retval, " LINE %i", lineNumber);
+
+	return(retval);
 }
 
 MODULE_SCOPE Tcl_Obj *tclpkcs11_bytearray_to_string(const unsigned char *data, unsigned long datalen) {
@@ -1281,7 +1378,7 @@ MODULE_SCOPE int tclpkcs11_logout(ClientData cd, Tcl_Interp *interp, int objc, T
 MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
 	struct tclpkcs11_interpdata *interpdata;
 	struct tclpkcs11_handle *handle;
-	unsigned char *input, resultbuf[1024];
+	unsigned char *input, resultbuf[1024], *dummybuf;
 	unsigned long tcl_strtobytearray_rv;
 	Tcl_HashEntry *tcl_handle_entry;
 	Tcl_Obj *pki_real_cmd;
@@ -1292,7 +1389,7 @@ MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *i
 	long slotid_long;
 	int tcl_keylist_llength, idx;
 	int input_len;
-	CK_ULONG resultbuf_len;
+	CK_ULONG resultbuf_len, dummybuf_len;
 	int sign, terminate;
 	int tcl_rv;
 
@@ -1468,6 +1565,7 @@ MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *i
 		return(TCL_ERROR);
 	}
 
+	foundObjs = 0;
 	chk_rv = handle->pkcs11->C_FindObjects(handle->session, &hObject, 1, &foundObjs);
 	if (chk_rv != CKR_OK) {
 		Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
@@ -1492,15 +1590,13 @@ MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *i
 		sign = 0;
 		chk_rv = handle->pkcs11->C_EncryptInit(handle->session, &mechanism, hObject);
 		if (chk_rv != CKR_OK) {
-			if (chk_rv == CKR_FUNCTION_NOT_SUPPORTED) {
-				sign = 1;
-				chk_rv = handle->pkcs11->C_SignInit(handle->session, &mechanism, hObject);
-				if (chk_rv != CKR_OK) {
-					Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
+			sign = 1;
+			chk_rv = handle->pkcs11->C_SignInit(handle->session, &mechanism, hObject);
+		}
+		if (chk_rv != CKR_OK) {
+			Tcl_SetObjResult(interp, tclpkcs11_pkcs11_error(chk_rv));
 
-					return(TCL_ERROR);
-				}
-			}
+			return(TCL_ERROR);
 		}
 
 		resultbuf_len = sizeof(resultbuf);
@@ -1529,20 +1625,18 @@ MODULE_SCOPE int tclpkcs11_perform_pki(int encrypt, ClientData cd, Tcl_Interp *i
 			chk_rv = handle->pkcs11->C_Sign(handle->session, input, input_len, resultbuf, &resultbuf_len);
 		}
 
-		terminate = 0;
-		if (chk_rv == CKR_OK) {
-			terminate = 1;
-		} else {
-			if (chk_rv == CKR_BUFFER_TOO_SMALL) {
-				terminate = 1;
-			}
+		terminate = 1;
+		if (chk_rv == CKR_OK || chk_rv == CKR_BUFFER_TOO_SMALL) {
+			terminate = 0;
 		}
 
 		if (terminate) {
+			dummybuf = (unsigned char *) "";
+			dummybuf_len = 0;
 			if (!sign) {
-				handle->pkcs11->C_EncryptFinal(handle->session, NULL, 0);
+				handle->pkcs11->C_EncryptFinal(handle->session, dummybuf, &dummybuf_len);
 			} else {
-				handle->pkcs11->C_SignFinal(handle->session, NULL, 0);
+				handle->pkcs11->C_SignFinal(handle->session, dummybuf, &dummybuf_len);
 			}
 		}
 
