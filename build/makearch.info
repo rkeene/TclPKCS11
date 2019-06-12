@@ -41,3 +41,6 @@ AFTER=""
 
 # Files matching these (space-seperated) patterns are deleted
 TMPS="*.out HEADER build work autogen.sh"
+
+# Upload to Fossil
+UPLOAD_TO='releases/@@ARCHIVE_FILE_NAME@@'
